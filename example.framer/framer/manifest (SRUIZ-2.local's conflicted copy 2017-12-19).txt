@@ -1,0 +1,31 @@
+app.coffee
+audiofiles/audiotrack1.m4a
+framer/coffee-script.js
+framer/config.json
+framer/framer.generated.js
+framer/framer.init.js
+framer/framer.js
+framer/framer.modules.js
+framer/framer.vekter.js
+framer/images/cursor-active.png
+framer/images/cursor-active@2x.png
+framer/images/cursor.png
+framer/images/cursor@2x.png
+framer/images/icon-120.png
+framer/images/icon-152.png
+framer/images/icon-180.png
+framer/images/icon-192.png
+framer/images/icon-76.png
+framer/manifest (SRUIZ.local's conflicted copy 2017-12-18).txt
+framer/manifest.txt
+framer/preview (Stephens-iMac.local's conflicted copy 2017-12-18).png
+framer/preview.png
+framer/style.css
+framer/version
+images/statusbar_left.png
+images/statusbar_right.png
+index.html
+modules/Icon.coffee
+modules/icons.json
+modules/myModule.coffee
+modules/SVGComponent.coffee
