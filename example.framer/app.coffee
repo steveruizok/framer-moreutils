@@ -336,231 +336,6 @@ class Separator extends Layer
 	
 		super options
 
-# Metric
-
-class Metric extends Layer
-	constructor: (options = {}) ->
-		
-		_.defaults options,
-			name: 'Metric'
-			clip: true
-			backgroundColor: '#FFF'
-			shadowY: 2
-			shadowBlur: 4
-			shadowColor: 'rgba(0,0,0,.16)'
-			data:
-				title: 'Reading'
-				start: 12
-				end: 42
-				current: 32
-				unit: '%'
-				startDate: '1 December 2017'
-				endDate: '31 December 2017'
-				history: [
-					{date: '1 December 2017', value: 12},
-					{date: '2 December 2017', value: 13},
-					{date: '4 December 2017', value: 17},
-					{date: '6 December 2017', value: 18},
-					{date: '12 December 2017', value: 20},
-					{date: '16 December 2017', value: 29}
-					]
-				lowerBetter: false
-			
-		super options
-		
-		_.assign @,
-			data: options.data
-		
-		_.assign @data,
-			startDate: new Date(Date.parse(@data.startDate))
-			endDate: new Date(Date.parse(@data.endDate))
-			currentDate: new Date()
-			progress: _.clamp((@data.current - @data.start) / (@data.end - @data.start), 0, 1)
-		
-		_.assign @data,
-			totalTime: @data.endDate.getTime() - @data.startDate.getTime()
-			passedTime: @data.currentDate.getTime() - @data.startDate.getTime()
-		
-		_.assign @data,
-			progressTime: _.clamp(@data.passedTime/@data.totalTime, 0, 1)
-		
-		# title
-		
-		@title = new H6
-			name: 'Title'
-			parent: @
-			x: Align.center()
-			y: 16
-			text: @data.title
-			
-		# log data
-		
-		@logIcon = new Icon
-			name: 'Log Data Icon'
-			parent: @
-			x: Align.right()
-			y: 0
-			icon: 'plus'
-			color: '#0075d0'
-		
-		# metrics
-		
-		@currentMetric = new H3
-			name: 'Current Metric'
-			parent: @
-			x: Align.center()
-			y: @title.maxY + 24
-			text: @data.current
-		
-		@currentUnit = new Caption
-			name: 'Current Unit'
-			parent: @
-			text: @data.unit
-		
-		_.assign @currentUnit,
-			x: @currentMetric.maxX + 2
-			y: @currentMetric.y
-		
-		@startMetric = new H6
-			name: 'Start Metric'
-			parent: @
-			x: 8
-			text: @data.start
-			
-		@endMetric = new H6
-			name: 'End Metric'
-			parent: @
-			x: Align.right(-8)
-			text: @data.end
-		
-		Utils.delay 0, =>
-			for layer in [@startMetric, @currentUnit, @endMetric]
-				layer.maxY = @currentMetric.maxY - 2
-		
-		# progress
-		
-		color = getStatusColor(@data.progress - @data.progressTime, @data.lowerBetter)
-		
-		@progressFrame = new Layer
-			name: 'Progress Frame'
-			parent: @
-			y: @currentMetric.maxY + 12
-			x: 8
-			width: @width - 16
-			height: 8
-			borderRadius: 8
-			backgroundColor: new Color(color).alpha(.2)
-			
-		@progressFill = new Layer
-			name: 'Progress Fill'
-			parent: @
-			y: @currentMetric.maxY + 12
-			x: 8
-			width: (@width - 16) * @data.progress
-			height: 8
-			borderRadius: 8
-			backgroundColor: color
-		
-		# date progress
-		
-		@dateProgressFrame = new Layer
-			name: 'Date Progress Frame'
-			parent: @
-			y: @progressFrame.maxY + 8
-			x: 8
-			width: @width - 16
-			height: 4
-			borderRadius: 8
-		
-		@dateProgressFill = new Layer
-			name: 'Date Progress Fill'
-			parent: @
-			y: @progressFrame.maxY + 8
-			x: 8
-			width: (@width - 16) * (@data.progressTime)
-			height: 4
-			borderRadius: 8
-			backgroundColor: '#000'
-		
-		# start date
-		
-		dateOptions = {month: 'short', day: 'numeric', year: '2-digit'}
-		
-		@startDateLayer = new H6
-			name: 'Start Date'
-			parent: @
-			x: 8
-			y: @dateProgressFill.maxY + 16
-			text: @data.startDate.toLocaleDateString([], dateOptions)
-		
-		@endDateLayer = new H6
-			name: 'End Date'
-			parent: @
-			x: Align.right(-8)
-			y: @dateProgressFill.maxY + 16
-			text: @data.endDate.toLocaleDateString([], dateOptions)
-		
-		# more icon
-		
-		@moreIcon = new Icon
-			parent: @
-			x: Align.center()
-			y: @progressFill.maxY + 18
-			icon: 'chevron-down'
-			
-		# Graph
-		
-		@graph = new Graph
-			parent: @
-			x: 16
-			y: @moreIcon.maxY + 16
-			width: @width - 32
-			data: @data
-		
-		@height = @endDateLayer.maxY + 24
-		
-		
-		@on "change:toggled", @toggleGraph
-		
-		@onTap => 
-			@toggled = !@toggled
-			
-			for sib in @siblings
-				if sib.constructor.name is 'Metric'
-					sib.toggled = false
-		
-		Utils.define @, "toggled", false
-	
-	toggleGraph: =>
-	
-		if not @toggled
-			
-			@moreIcon.icon = 'chevron-down'
-		
-			@moreIcon.animate
-				y: @progressFill.maxY + 18
-				options:
-					time: .25
-		
-			@animate
-				height: @endDateLayer.maxY + 24
-				options:
-					time: .25
-					
-			return
-			
-		@moreIcon.icon = 'chevron-up'
-			
-		@moreIcon.animate
-			y: @graph.maxY + 8
-			options:
-				time: .25
-		
-		@animate
-			height: @graph.maxY + 48
-			options:
-				time: .25
-
 
 # ----------------
 # custom views
@@ -1190,6 +965,7 @@ Utils.build constrainView, ->
 		
 	setMoves(parent, child)
 	
+	
 	# aspect ratio + width
 	
 	parent = makeParent(7)
@@ -1219,7 +995,7 @@ Utils.build constrainView, ->
 		text: "Utils.constrain(layer, ['height', 'aspectRatio'])"
 		fontSize: 10
 	
-	Utils.constrain child, ['width', 'aspectRatio']
+	Utils.constrain child, ['height', 'aspectRatio']
 		
 	setMoves(parent, child)
 	
@@ -1778,6 +1554,6 @@ Utils.build TemplateView, ->
 
 
 
-app.showNext(constrainView, false)
+app.showNext(homeView, false)
 
 app.bringToFront()
