@@ -1024,11 +1024,11 @@ Utils.build constrainView, ->
 		parent: @content
 		x: Align.center()
 		y: @title.maxY + 8
-		text: 'Utils.constrain(layer, options = {})'
+		text: 'Utils.constrain(layer, directions)'
 	
 	separators = []
 	
-	for i in _.range(8)
+	for i in _.range(9)
 		separators[i] = new Layer
 			parent: @content
 			name: '.'
@@ -1119,10 +1119,9 @@ Utils.build constrainView, ->
 	
 	parent = makeParent(0)
 	child = makeChild(parent)
-	makeDescription 0, 'Utils.constrain(layer, {left: true})'
+	makeDescription 0, "Utils.constrain(layer, 'left')"
 	
-	Utils.constrain child,
-		left: true
+	Utils.constrain child, 'left'
 		
 	setMoves(parent, child)
 	
@@ -1131,10 +1130,9 @@ Utils.build constrainView, ->
 	
 	parent = makeParent(1)
 	child = makeChild(parent)
-	makeDescription 1, 'Utils.constrain(layer, {right: true})'
+	makeDescription 1, "Utils.constrain(layer, 'right')"
 	
-	Utils.constrain child,
-		right: true
+	Utils.constrain child, 'right'
 		
 	setMoves(parent, child)
 	
@@ -1143,10 +1141,9 @@ Utils.build constrainView, ->
 	
 	parent = makeParent(2)
 	child = makeChild(parent)
-	makeDescription 2, 'Utils.constrain(layer, {bottom: true})'
+	makeDescription 2, "Utils.constrain(layer, 'bottom')"
 	
-	Utils.constrain child,
-		bottom: true
+	Utils.constrain child, 'bottom'
 		
 	setMoves(parent, child)
 	
@@ -1155,10 +1152,9 @@ Utils.build constrainView, ->
 	
 	parent = makeParent(3)
 	child = makeChild(parent)
-	makeDescription 3, 'Utils.constrain(layer, {top: true})'
+	makeDescription 3, "Utils.constrain(layer, 'top')"
 	
-	Utils.constrain child,
-		top: true
+	Utils.constrain child, 'top'
 		
 	setMoves(parent, child)
 	
@@ -1167,10 +1163,9 @@ Utils.build constrainView, ->
 	
 	parent = makeParent(4)
 	child = makeChild(parent)
-	makeDescription 4, 'Utils.constrain(layer, {height: true})'
+	makeDescription 4, "Utils.constrain(layer, 'height')"
 	
-	Utils.constrain child,
-		height: true
+	Utils.constrain child, 'height'
 		
 	setMoves(parent, child)
 	
@@ -1179,34 +1174,23 @@ Utils.build constrainView, ->
 	
 	parent = makeParent(5)
 	child = makeChild(parent)
-	makeDescription 5, 'Utils.constrain(layer, {width: true})'
+	makeDescription 5, "Utils.constrain(layer, 'width')"
 	
-	Utils.constrain child,
-		width: true
+	Utils.constrain child, 'width'
 		
 	setMoves(parent, child)
 	
-	
-	# aspect ratio + width
+	# multiple values
 	
 	parent = makeParent(6)
 	child = makeChild(parent)
-		
-	description = new Code
-		parent: @content
-		x: Align.center()
-		y: separators[6].y + 160
-		text: 'Utils.constrain(layer, {width: true, aspectRatio: true})'
-		fontSize: 10
+	makeDescription 6, "Utils.constrain(layer, ['width', 'top'])"
 	
-	Utils.constrain child,
-		width: true
-		aspectRatio: true
+	Utils.constrain child, ['width', 'top']
 		
 	setMoves(parent, child)
 	
-	
-	# aspect ratio + height
+	# aspect ratio + width
 	
 	parent = makeParent(7)
 	child = makeChild(parent)
@@ -1215,12 +1199,27 @@ Utils.build constrainView, ->
 		parent: @content
 		x: Align.center()
 		y: separators[7].y + 160
-		text: 'Utils.constrain(layer, {height: true, aspectRatio: true})'
+		text: "Utils.constrain(layer, ['left', 'aspectRatio'])"
 		fontSize: 10
 	
-	Utils.constrain child,
-		height: true
-		aspectRatio: true
+	Utils.constrain child, ['width', 'aspectRatio']
+		
+	setMoves(parent, child)
+	
+	
+	# aspect ratio + height
+	
+	parent = makeParent(8)
+	child = makeChild(parent)
+		
+	description = new Code
+		parent: @content
+		x: Align.center()
+		y: separators[8].y + 160
+		text: "Utils.constrain(layer, ['height', 'aspectRatio'])"
+		fontSize: 10
+	
+	Utils.constrain child, ['width', 'aspectRatio']
 		
 	setMoves(parent, child)
 	
@@ -1419,14 +1418,14 @@ Utils.build pinView, ->
 	Utils.pin smLayer, lgLayer, 'bottom' 
 	
 	setMoves(lgLayer)
-	
-	
-	
-	# distance
+
+
+
+	# multiple
 	
 	smLayer = new Layer
 		parent: @content
-		y: separators[4].y + 24
+		y: separators[4].y + 72
 		x: 80
 		width: 48
 		height: 48
@@ -1440,15 +1439,14 @@ Utils.build pinView, ->
 		parent: @content
 		x: Align.center()
 		y: separators[4].y + 160
-		text: "Utils.pin(smLayer, lgLayer, 'left', 48)"
+		text: "Utils.pin(smLayer, lgLayer, ['bottom', 'left'])"
 	
-	Utils.pin smLayer, lgLayer, 'left', 48 
+	Utils.pin smLayer, lgLayer, ['bottom', 'left']
 	
 	setMoves(lgLayer)
 	
 	
-	
-	# unpin
+	# distance
 	
 	smLayer = new Layer
 		parent: @content
@@ -1466,6 +1464,32 @@ Utils.build pinView, ->
 		parent: @content
 		x: Align.center()
 		y: separators[5].y + 160
+		text: "Utils.pin(smLayer, lgLayer, 'left', 48)"
+	
+	Utils.pin smLayer, lgLayer, 'left', 48 
+	
+	setMoves(lgLayer)
+	
+	
+	
+	# unpin
+	
+	smLayer = new Layer
+		parent: @content
+		y: separators[6].y + 24
+		x: 80
+		width: 48
+		height: 48
+		borderWidth: 1
+		borderColor: '#00aaff'
+		backgroundColor: '#98d5ff'
+	
+	lgLayer = makeLgLayer(6)
+		
+	description = new Code
+		parent: @content
+		x: Align.center()
+		y: separators[6].y + 160
 		text: "smLayer.onTap -> Utils.unpin(smLayer)"
 	
 	i = 0
@@ -1754,6 +1778,6 @@ Utils.build TemplateView, ->
 
 
 
-app.showNext(homeView, false)
+app.showNext(constrainView, false)
 
 app.bringToFront()

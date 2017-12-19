@@ -8,48 +8,49 @@ _.assign Utils,
 		if not _.isArray(directions) then directions = [directions]
 		
 		for direction in directions
-			switch direction
-				when "left"
-					props = ['x']
-					lProp = 'maxX'
-					distance ?= targetLayer.x -
-						(layer.x + layer.width)
-					getDifference = -> targetLayer.screenFrame.x - distance
-				when "right"
-					props = ['x', 'width']
-					lProp = 'x'
-					distance ?= layer.x -
-						(targetLayer.x + targetLayer.width)
-					getDifference = -> distance +
-						(targetLayer.x + targetLayer.width) 
-				when "top"
-					props = ['y']
-					lProp = 'maxY'
-					distance ?= targetLayer.y -
-						(layer.y + layer.height)
-					getDifference = -> targetLayer.y - distance
-				when "bottom"
-					props = ['y', 'height']
-					lProp = 'y'
-					distance ?= layer.y -
-						(targetLayer.y + targetLayer.height)
-					getDifference = -> distance + 
-						(targetLayer.y + targetLayer.height) 
-				else
-					throw 'Utils.pin - directions can only be top, right, bottom or left.'
-			
-			
-			for prop in props
-				setPin =
-					targetLayer: targetLayer
-					direction: direction
-					event: "change:#{prop}"
-					func: -> layer[lProp] = getDifference()
-			
-				layer.pins ?= []
-				layer.pins.push(setPin)
+			do (layer, targetLayer, direction, distance) ->
+				switch direction
+					when "left"
+						props = ['x']
+						lProp = 'maxX'
+						distance ?= targetLayer.x -
+							(layer.x + layer.width)
+						getDifference = -> targetLayer.screenFrame.x - distance
+					when "right"
+						props = ['x', 'width']
+						lProp = 'x'
+						distance ?= layer.x -
+							(targetLayer.x + targetLayer.width)
+						getDifference = -> distance +
+							(targetLayer.x + targetLayer.width) 
+					when "top"
+						props = ['y']
+						lProp = 'maxY'
+						distance ?= targetLayer.y -
+							(layer.y + layer.height)
+						getDifference = -> targetLayer.y - distance
+					when "bottom"
+						props = ['y', 'height']
+						lProp = 'y'
+						distance ?= layer.y -
+							(targetLayer.y + targetLayer.height)
+						getDifference = -> distance + 
+							(targetLayer.y + targetLayer.height) 
+					else
+						throw 'Utils.pin - directions can only be top, right, bottom or left.'
 				
-				targetLayer.on setPin.event, setPin.func
+				
+				for prop in props
+					setPin =
+						targetLayer: targetLayer
+						direction: direction
+						event: "change:#{prop}"
+						func: -> layer[lProp] = getDifference()
+				
+					layer.pins ?= []
+					layer.pins.push(setPin)
+					
+					targetLayer.on setPin.event, setPin.func
 	
 	
 	# Remove all of a layer's pins, or pins from a certain target layer and/or direction
@@ -68,10 +69,12 @@ _.assign Utils,
 
 	# Set a layer's contraints to its parent
 	# @example    Utils.constrain(layer, {left: true, top: true, asepectRatio: true})
-	constrain: (layer, options = {}) ->
+	constrain: (layer, opts, distance) ->
 		if not layer.parent? then throw 'Utils.constrain requires a layer with a parent.'
 		
-		_.defaults options,
+		if not _.isArray(opts) then opts = [opts]
+
+		options =
 			left: false, 
 			top: false, 
 			right: false, 
@@ -79,6 +82,9 @@ _.assign Utils,
 			height: false
 			width: false
 			aspectRatio: false
+
+		for opt in opts
+			options[opt] = true
 		
 		values = 
 			left: if options.left then layer.x else null

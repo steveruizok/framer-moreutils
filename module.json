@@ -1,10 +1,10 @@
 {
-    "name": "Gotcha 👌",
-    "description": "Press a key and your prototype becomes its own hand-off spec.",
+    "name": "moreutils",
+    "description": "Expand Framer's Utils with some handy helper functions.",
     "author": "Steve Ruiz",
 
-    "require": "require 'gotcha'",
-    "install": "gotcha.coffee",
+    "require": "require 'moreutils'",
+    "install": "moreutils.coffee",
     "example": "example.coffee",
 
     "thumb": "icon_small.png"
