@@ -181,52 +181,80 @@ _.assign Utils,
 			rows: []
 			columns: []
 			layers: []
-			getLayer: (row, col) -> return @rows[row][col]
-			getRandom: -> return _.sample(_.sample(@rows))
-			push: (layer, i = @layers.length) ->
-				
-				if not layer
+
+			apply: (func) ->
+				for layer in @layers
+					Utils.build(layer, func)
+
+			# get a specified column
+			getColumn: (layer) -> 
+				return @columns.indexOf(_.find(@columns, (c) -> _.includes(c, layer)))
+
+			# get a specified row
+			getRow: (layer) -> 
+				return @rows.indexOf(_.find(@rows, (r) -> _.includes(r, layer)))
+
+			# get a layer at a specified grid positions
+			getLayer: (row, col) -> 
+				return @rows[row][col]
+
+			# return a random layer from the grid
+			getRandom: -> 
+				return _.sample(_.sample(@rows))
+
+			# add a new layer to the grid, optionally at a specified position
+			add: (layer, i = @layers.length, animate = false) ->
+
+				if not layer?
 					layer = @layers[0].copySingle()
-					layer.parent = @layers[0].parent
 				
-				col = i % cols
-				row = Math.floor(i / cols)
+				layer.parent = @layers[0].parent
+
+				@layers.splice(i, 0, layer)
 				
-				@rows[row] ?= [] 
-				@rows[row].push(layer)
-				
-				@columns[col] ?= []
-				@columns[col].push(layer)
-				
-				_.assign layer,
-					x: @x + (col * (@width + @columnMargin))
-					y: @y + (row * (@height + @rowMargin))
-				
-				@layers.push(layer)
-				
+				@_refresh(@layers, animate)
+
 				return layer
-				
-			pull: (layer) -> # buggy
-				survivors = _.without(@layers, layer)
-				
+			
+			# remove a layer from the grid
+			remove: (layer, animate) ->
+				@_refresh(_.without(@layers, layer), animate)
+				layer.destroy()
+
+				return @
+
+			# clear and re-fill arrays, then build
+			_refresh: (layers, animate) ->
 				@rows = []
 				@columns = []
-				@layers = []
-				
-				for sur, i in survivors
-					@push(sur)
+				@layers = layers
+
+				@_build(animate)
+
+			# put together the grid
+			_build: (animate = false) ->
+				for layer, i in @layers
+					col = i % cols
+					row = Math.floor(i / cols)
 					
-				return @
+					@rows[row] ?= [] 
+					@rows[row].push(layer)
 					
-			apply: (func, layers = @layers) ->
-				if not _.isArray(layers) then layers = [layers]
-				
-				for layer in layers
-					Utils.build(layer, func)
+					@columns[col] ?= []
+					@columns[col].push(layer)
+					
+					if animate
+						layer.animate
+							x: @x + (col * (@width + @columnMargin))
+							y: @y + (row * (@height + @rowMargin))
+						continue
+
+					_.assign layer,
+						x: @x + (col * (@width + @columnMargin))
+						y: @y + (row * (@height + @rowMargin))
 		
-		for layer, i in array
-			g.push(layer, i)
-				
+		g._refresh(array)
+
 		return g
 	
 	

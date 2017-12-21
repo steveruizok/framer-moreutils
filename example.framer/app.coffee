@@ -1307,7 +1307,7 @@ Utils.build gridView, ->
 	
 	separators = []
 	
-	for i in _.range(8)
+	for i in _.range(9)
 		separators[i] = new Layer
 			parent: @content
 			name: '.'
@@ -1324,31 +1324,8 @@ Utils.build gridView, ->
 			x: Align.center()
 			y: separators[separator].y + 160
 			text: text
-			
-	# basic grid
-	
-	layers = []
-	
-	for i in _.range(10)
-		layers[i] = new Layer
-			name: '.'
-			parent: @content
-			x: 96
-			y: separators[0].y + 16
-			width: 32
-			height: 32
-			borderWidth: 1
-			borderColor: '#00aaff'
-			backgroundColor: '#98d5ff'
-			animationOptions: 
-				time: .25
-			
-	makeDescription 0, 'Utils.grid(layers, 4)'
-				
-	Utils.grid(layers, 4)
 	
 	
-			
 	# basic grid
 	
 	layers = []
@@ -1366,10 +1343,10 @@ Utils.build gridView, ->
 			backgroundColor: '#cdebff'
 			animationOptions: 
 				time: .25
-			
-	makeDescription 0, 'Utils.grid(layers, 4)'
 				
 	Utils.grid(layers, 4)
+	
+	makeDescription 0, 'Utils.grid(layers, 4)'
 	
 	# making grid from layer
 	
@@ -1389,6 +1366,7 @@ Utils.build gridView, ->
 	Utils.makeGrid(layer, 4, 3)
 			
 	makeDescription 1, 'Utils.makeGrid(layer, 4, 3)'
+	
 	
 	# choose a grid member
 	
@@ -1410,6 +1388,7 @@ Utils.build gridView, ->
 	grid.getLayer(1, 2).backgroundColor = '#98ee66'
 	
 	makeDescription 2, "grid.getLayer(1, 2).backgroundColor = '#98ee66'"
+	
 	
 	# choose a random grid member
 	
@@ -1433,7 +1412,8 @@ Utils.build gridView, ->
 	makeDescription 3, "grid.getRandom().backgroundColor = '#98ee66'"
 	
 	
-	# apply all to grid members
+	
+	# get a layer's row / column
 	
 	layer = new Layer
 		name: '.'
@@ -1450,12 +1430,22 @@ Utils.build gridView, ->
 			
 	grid = Utils.makeGrid(layer, 4, 3)
 	
-	grid.apply -> @rotation = 35
+	grid.apply ->
+		do (grid) =>
+			@onTap ->
+				for layer in grid.layers
+					layer.backgroundColor = '#cdebff'
+					
+				for layer in grid.rows[grid.getRow(@)]
+					layer.backgroundColor = '#98ee66'
+				
+				for layer in grid.columns[grid.getColumn(@)]
+					layer.backgroundColor = '#98ee66'
 	
-	makeDescription 4, "grid.apply -> @rotation = 35"
+	makeDescription 4, "grid.getRow(layer) / grid.getColumn(layer)"
 	
 	
-	# pull grid members
+	# apply all to grid members
 	
 	layer = new Layer
 		name: '.'
@@ -1472,24 +1462,77 @@ Utils.build gridView, ->
 			
 	grid = Utils.makeGrid(layer, 4, 3)
 	
+	grid.apply -> @rotation = 35
+	
+	makeDescription 5, "grid.apply -> @rotation = 35"
+	
+	
+	# pull grid members
+	
+	layer = new Layer
+		name: '.'
+		parent: @content
+		x: 96
+		y: separators[6].y + 16
+		width: 32
+		height: 32
+		borderWidth: 1
+		borderColor: '#98d5ff'
+		backgroundColor: '#cdebff'
+		animationOptions: 
+			time: .25
+			
+	grid = Utils.makeGrid(layer, 4, 3)
+	
 	Utils.distribute(grid.layers, 'hueRotate', 0, 360)
 	
-	do (grid) ->
-		grid.apply -> @onTap => grid.pull(@)
+	grid.apply ->
+		do (grid) =>
+			@onTap -> grid.remove(@, true)
 	
-	makeDescription 5, "layer.onTap -> grid.pull(@)"
+	makeDescription 6, "layer.onTap -> grid.remove(@)"
 	
 	
-	# push grid members
+	# add grid members
 	
 	layers = []
 	
-	for i in _.range(1)
+	for i in _.range(4)
 		layers[i] = new Layer
 			name: '.'
 			parent: @content
 			x: 96
-			y: separators[6].y + 16
+			y: separators[7].y + 16
+			width: 32
+			height: 32
+			borderWidth: 1
+			borderColor: '#00aaff'
+			backgroundColor: '#98d5ff'
+			animationOptions: 
+				time: .25
+			
+	grid = Utils.grid(layers, 4)
+	
+	Utils.distribute(grid.layers, 'hueRotate', 50, 360)
+
+	for layer, i in grid.layers
+		do (grid, layer, i) ->
+			layer.onTap => 
+				l = grid.add()
+	
+	makeDescription 7, "layer.onTap -> grid.add()"
+	
+	
+	# add grid members
+	
+	layers = []
+	
+	for i in _.range(4)
+		layers[i] = new Layer
+			name: 'layer ' + i
+			parent: @content
+			x: 96
+			y: separators[8].y + 16
 			width: 32
 			height: 32
 			borderWidth: 1
@@ -1501,11 +1544,15 @@ Utils.build gridView, ->
 	grid = Utils.grid(layers, 4)
 	
 	Utils.distribute(grid.layers, 'hueRotate', 0, 360)
+
+	for layer in grid.layers
+		layer.onTap -> 
+			i = _.indexOf(grid.layers, @)
+			layerCopy = @copy()
+			layerCopy.opacity = .5
+			grid.add(layerCopy, i + 1, true)
 	
-	do (grid) ->
-		grid.apply -> @onTap => grid.push()
-	
-	makeDescription 6, "layer.onTap -> grid.push()"
+	makeDescription 8, "layer.onTap -> grid.add(@copy(), i + 1, true)"
 	
 	@updateContent()
 
