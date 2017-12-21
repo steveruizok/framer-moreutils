@@ -182,7 +182,12 @@ class App extends FlowComponent
 		if next?.onLoad?
 			next.onLoad()
 			
-		@header.backIcon.visible = prev?
+		unless prev?
+			@header.backIcon.visible = false
+		else if prev?.name is 'Home View'
+			@header.backIcon.visible = true
+		else
+			@header.backIcon.visible = false
 		
 		@header.updateTitle(next.name ? '')
 		
@@ -270,6 +275,8 @@ class Header extends Layer
 		# events
 		
 		@backIcon.onTap => app.showPrevious()
+		
+		@titleLayer.onTap => app?.current.scrollToPoint(y: 0)
 		
 		@on "change:title", (value) ->
 			@titleLayer.text = value
