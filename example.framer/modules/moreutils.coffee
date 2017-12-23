@@ -153,12 +153,48 @@ _.assign Utils,
 	
 	# distribute layers in an array between two values
 	# @example    Utils.distribute(childLayers, 'midX', parent.x + 32, parent.width - 32)
-	distribute: (array = [], property, start, end, animate = false) ->
+	distribute: (layers = [], property, start, end, animate = false) ->
 		
 		animate ?= typeof start is 'boolean' and start is true
-		step = (end - start) / (array.length - 1)
+		step = (end - start) / (layers.length - 1)
 		
-		for layer, i in array			
+		if property is 'horizontal'
+			totalWidth = end - start
+			contentWidth = _.sumBy(layers, 'width')
+			space = totalWidth - contentWidth
+			step = space / (layers.length - 1)
+			property = 'x'
+
+			for layer, i in layers			
+				if animate
+					layer.animate {"#{property}": last ? start}
+					last = layer.maxX + step
+					continue
+
+				layer[property] = last ? start
+				last = layer.maxX + step
+
+			return
+
+		if property is 'vertical'
+			totalWidth = end - start
+			contentWidth = _.sumBy(layers, 'height')
+			space = totalWidth - contentWidth
+			step = space / (layers.length - 1)
+			property = 'y'
+
+			for layer, i in layers			
+				if animate
+					layer.animate {"#{property}": last ? start}
+					last = layer.maxY + step
+					continue
+
+				layer[property] = last ? start
+				last = layer.maxY + step
+
+			return
+
+		for layer, i in layers			
 			if animate 
 				layer.animate {"#{property}": start + (i * step)}
 				continue
@@ -278,6 +314,32 @@ _.assign Utils,
 		layer[property] = (_.maxBy(array, property)?[property] ? 0) + padding
 		
 		return array
+
+	# set a layer to contain its children
+	# @example    Utils.contain(layer)
+	contain: (layer, padding = {}, xPadding) ->
+		if typeof padding is 'number'
+			padding = {
+				top: padding
+				right: xPadding ? padding
+				bottom: padding
+				left: xPadding ? padding
+			}
+
+		_.defaults padding, {top: 0, right: 0, bottom: 0, left: 0}
+
+		xDiff = (_.minBy(layer.children, 'x')?.x ? 0) - padding.left
+		yDiff = (_.minBy(layer.children, 'y')?.y ? 0) - padding.top
+
+		for child in layer.children
+			child.x -= xDiff
+			child.y -= yDiff
+
+		_.assign layer,
+			x: layer.x + xDiff
+			y: layer.y + yDiff
+			width: (_.maxBy(layer.children, 'maxX')?.maxX ? 0) + padding.right
+			height: (_.maxBy(layer.children, 'maxY')?.maxY ? 0) + padding.bottom
 	
 	
 	# get a status color based on a standard deviation
@@ -306,7 +368,13 @@ _.assign Utils,
 					animations[i + 1]?.start()
 			
 		Utils.delay 0, -> animations[0].start()
-		
+	
+	# Set attributes on an HTML element
+	# @example    Utils.setAttributes(inputElement, {value: 12})
+
+	setAttributes: (element, attributes = {}) ->
+		for key, value of attributes
+			element.setAttribute(key, value)
 		
 		
 		
