@@ -179,10 +179,24 @@ class App extends FlowComponent
 		@onTransitionEnd @resetPrevious
 	
 	updateNext: (prev, next) =>
+		if prev?.onExit?
+			prev?.onExit()
+	
 		if next?.onLoad?
 			next.onLoad()
-			
-		@header.backIcon.visible = prev?
+		
+		if prev? and next isnt @_stack[0]?.layer ? undefined
+			_.assign @header.backIcon,
+				visible: true
+				opacity: 0
+				
+			@header.backIcon.animate
+				opacity: 1
+				options:
+					time: .3
+					delay: .35
+		else
+			@header.backIcon.visible = false
 		
 		@header.updateTitle(next.name ? '')
 		
@@ -319,6 +333,10 @@ class View extends ScrollComponent
 	swipeHome: =>
 		return if flow.current is homeView
 		flow.showPrevious()
+		
+	onLoad: => null
+	
+	onExit: => null
 
 # Separator
 
@@ -526,6 +544,7 @@ Utils.build distributeView, ->
 			y: @subtitle.maxY + 16 + (180 * i)
 			backgroundColor: '#777'
 		
+	s = 0
 		
 	# standard x position / distribution
 	
@@ -535,7 +554,7 @@ Utils.build distributeView, ->
 		layers[i] = new Layer
 			name: 'Distribute Layer 1'
 			parent: @content
-			y: separators[0].y + 32
+			y: separators[s].y + 32
 			width: 28
 			height: 72
 			borderWidth: 1
@@ -549,8 +568,37 @@ Utils.build distributeView, ->
 	description = new Code
 		parent: @content
 		x: Align.center()
-		y: separators[0].y + 128
+		y: separators[s].y + 128
 		text: 'Utils.distribute(layers, "x", 32, 256)'
+		
+	s++
+	
+	# standard x position / distribution
+	
+	layers = []
+	
+	for i in _.range(10)
+		layers[i] = new Layer
+			name: 'Distribute Layer 1'
+			parent: @content
+			y: separators[s].y + 32
+			width: 28
+			height: 72
+			borderWidth: 1
+			borderColor: '#00aaff'
+			backgroundColor: '#98d5ff'
+			animationOptions: 
+				time: .25
+			
+	Utils.distribute(layers, 'x', 32, @width - 60)
+		
+	description = new Code
+		parent: @content
+		x: Align.center()
+		y: separators[s].y + 128
+		text: 'Utils.distribute(layers, "x", 32, 256)'
+	
+	s++
 	
 	# x position / rotation distribution
 	
@@ -560,7 +608,7 @@ Utils.build distributeView, ->
 		layers[i] = new Layer
 			name: 'Distribute Layer 1'
 			parent: @content
-			y: separators[1].y + 32
+			y: separators[s].y + 32
 			width: 28
 			height: 72
 			borderWidth: 1
@@ -575,8 +623,10 @@ Utils.build distributeView, ->
 	description = new Code
 		parent: @content
 		x: Align.center()
-		y: separators[1].y + 128
+		y: separators[s].y + 128
 		text: 'Utils.distribute(layers, "rotation", 0, 180)'
+	
+	s++
 	
 	# x position / hueRotate distribution
 	
@@ -588,7 +638,7 @@ Utils.build distributeView, ->
 			parent: @content
 			width: 28
 			height: 72
-			y: separators[2].y + 32
+			y: separators[s].y + 32
 			backgroundColor: '#22ccff'
 			animationOptions: 
 				time: .25
@@ -599,8 +649,10 @@ Utils.build distributeView, ->
 	description = new Code
 		parent: @content
 		x: Align.center()
-		y: separators[2].y + 128
+		y: separators[s].y + 128
 		text: 'Utils.distribute(layers, "hueRotate", 0, 180)'
+	
+	s++
 	
 	# x position / hueRotate / borderRadius distribution
 	
@@ -610,7 +662,7 @@ Utils.build distributeView, ->
 		layers[i] = new Layer
 			name: 'Distribute Layer 2'
 			parent: @content
-			y: separators[3].y + 32
+			y: separators[s].y + 32
 			width: 28
 			height: 72
 			borderWidth: 1
@@ -626,13 +678,13 @@ Utils.build distributeView, ->
 	description = new Code
 		parent: @content
 		x: Align.center()
-		y: separators[3].y + 128
+		y: separators[s].y + 128
 		text: 'Utils.distribute(layers, "opacity", 0.1, 1)'
 		
 	description = new Code
 		parent: @content
 		x: Align.center()
-		y: separators[3].y + 144
+		y: separators[s].y + 144
 		text: 'Utils.distribute(layers, "borderRadius", 0, 32)'
 		
 	@updateContent()
@@ -787,7 +839,6 @@ constrainView = new View
 
 Utils.build constrainView, ->
 	
-	
 	@title = new H3
 		parent: @content
 		x: Align.center()
@@ -817,6 +868,8 @@ Utils.build constrainView, ->
 	
 	animOptions =
 		time: .35
+		
+	anims = []
 	
 	setMoves = (layerA) ->
 		startX = layerA.x
@@ -840,7 +893,6 @@ Utils.build constrainView, ->
 			height: 96
 			options: animOptions
 		
-		
 		yaxis0 = new Animation layerA,
 			y: startY + 16
 			width: 96
@@ -859,10 +911,15 @@ Utils.build constrainView, ->
 			height: 96
 			options: animOptions
 		
+		anims.push xaxis0
+		
 		Utils.chainAnimations([xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2])
 	
+	animLayers = []
+	
 	makeParent = (separator = 0) =>
-		return new Layer
+		
+		parent = new Layer
 			parent: @content
 			y: separators[separator].y + 24
 			x: Align.center
@@ -871,9 +928,14 @@ Utils.build constrainView, ->
 			borderWidth: 1
 			borderColor: '#98d5ff'
 			backgroundColor: '#cdebff'
+			
+		animLayers.push(parent)
+		
+		return parent
 	
 	makeChild = (parent) =>
-		return new Layer
+	
+		child = new Layer
 			parent: parent
 			width: 56
 			height: 56
@@ -882,6 +944,10 @@ Utils.build constrainView, ->
 			borderWidth: 1
 			borderColor: '#00aaff'
 			backgroundColor: '#98d5ff'
+			
+		animLayers.push(child)
+		
+		return child
 			
 	makeDescription = (separator, text) =>
 		return new Code
@@ -1000,6 +1066,18 @@ Utils.build constrainView, ->
 	setMoves(parent, child)
 	
 	@updateContent()
+	
+	Utils.delay 1, ->
+		for layer in animLayers
+			layer.animateStop()
+	
+	@onLoad = =>
+		for anim in anims
+			anim.start()
+		
+	@onExit = =>
+		for layer in animLayers
+			layer.animateStop()
 
 # Pin View
 
@@ -1036,6 +1114,8 @@ Utils.build pinView, ->
 	
 	animOptions =
 		time: .35
+		
+	anims = []
 	
 	setMoves = (layer) ->
 		
@@ -1078,12 +1158,15 @@ Utils.build pinView, ->
 			width: 96
 			height: 96
 			options: animOptions
-		
+			
+		anims.push(xaxis0)
 		
 		Utils.chainAnimations([xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2])
 	
+	animLayers = []
+	
 	makeLgLayer = (separator = 0) =>
-		return new Layer
+		lgLayer = new Layer
 			parent: @content
 			y: separators[separator].y + 24
 			x: Align.center
@@ -1092,6 +1175,10 @@ Utils.build pinView, ->
 			borderWidth: 1
 			borderColor: '#98d5ff'
 			backgroundColor: '#cdebff'
+			
+		animLayers.push(lgLayer)
+		
+		return lgLayer
 	
 	# left
 	
@@ -1284,6 +1371,18 @@ Utils.build pinView, ->
 	setMoves(lgLayer)
 	
 	@updateContent()
+	
+	Utils.delay 1, ->
+		for layer in animLayers
+			layer.animateStop()
+	
+	@onLoad = =>
+		for anim in anims
+			anim.start()
+		
+	@onExit = =>
+		for layer in animLayers
+			layer.animateStop()
 
 # Grid View
 
@@ -1597,7 +1696,6 @@ Utils.build TemplateView, ->
 			borderWidth: 1
 			borderColor: '#98d5ff'
 			backgroundColor: '#cdebff'
-
 
 
 
