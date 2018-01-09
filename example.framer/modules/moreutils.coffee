@@ -69,7 +69,7 @@ _.assign Utils,
 
 	# Set a layer's contraints to its parent
 	# @example    Utils.constrain(layer, {left: true, top: true, asepectRatio: true})
-	constrain: (layer, opts, distance) ->
+	constrain: (layer, opts) ->
 		if not layer.parent? then throw 'Utils.constrain requires a layer with a parent.'
 		
 		if not _.isArray(opts) then opts = [opts]
@@ -246,12 +246,30 @@ _.assign Utils,
 	
 	# set a layer to the max property among an array of layers (usually children)
 	# @example    Utils.fit(layer, layer.children, 'maxY', 16)
-	fit: (layer, array = [], property, padding = 0) ->
-		layer[property] = (_.maxBy(array, property)?[property] ? 0) + padding
+	fitTo: (layer, array = [], property, padding = 0) ->
+		
 		
 		return array
 	
-	
+
+	fit: (layer, padding = 16) ->
+		minX = (_.minBy(layer.children, 'x')?.x ? 0) + padding
+		maxX = (_.maxBy(layer.children, 'maxX')?.maxX ? 0) + padding
+		minY = (_.minBy(layer.children, 'y')?.y ? 0) + padding
+		maxY = (_.maxBy(layer.children, 'maxY')?.maxY ? 0) + padding
+		
+		for child in layer.children
+			child.x = _.clamp(padding + (child.x - minX), 0, Infinity)
+			child.y = _.clamp(padding + (child.y - minY), 0, Infinity)
+
+		_.assign layer,
+			x: layer.x + minX
+			y: layer.y + minY
+			width: maxX - minX
+			height: maxY - minY
+
+
+
 	# get a status color based on a standard deviation
 	# @example    Utils.getStatusColor(.04, false)
 	getStatusColor: (dev, lowerBetter = false) ->

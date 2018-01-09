@@ -1509,6 +1509,75 @@ Utils.build gridView, ->
 	
 	@updateContent()
 
+# Fit View
+
+fitView = new View
+	name: 'Utils'
+
+Utils.build fitView, ->
+	
+	@title = new H3
+		parent: @content
+		x: Align.center()
+		y: 32
+		text: 'Utils.fit'
+		
+	@subtitle = new Code
+		parent: @content
+		x: Align.center()
+		y: @title.maxY + 8
+		text: 'Utils.fit(parent, padding)'
+	
+	separators = []
+	
+	for i in _.range(8)
+		separators[i] = new Layer
+			parent: @content
+			name: '.'
+			width: Screen.width - 16
+			height: 1
+			x: 8
+			y: @subtitle.maxY + 16 + (196 * i)
+			backgroundColor: '#777'
+	
+	makeParent = (separator = 0) =>
+		return new Layer
+			parent: @content
+			y: separators[separator].y + 24
+			x: Align.center
+			width: 128
+			height: 128
+			borderWidth: 1
+			borderColor: '#98d5ff'
+			backgroundColor: '#cdebff'
+	
+	makeChild = (parent) =>
+		return new Layer
+			parent: parent
+			width: 24
+			height: 24
+			x: _.random(0, 128)
+			y: _.random(8, 96)
+			borderWidth: 1
+			borderColor: '#00aaff'
+			backgroundColor: '#98d5ff'
+			
+	makeDescription = (separator, text) =>
+		return new Code
+			parent: @content
+			x: Align.center()
+			y: separators[separator].y + 160
+			text: text
+			
+	# fit (standard)
+
+	parent = makeParent(0)
+	
+	for i in _.range(3)
+		makeChild(parent)
+		
+	Utils.fit(parent)
+
 # Template View
 
 TemplateView = new View
@@ -1554,6 +1623,6 @@ Utils.build TemplateView, ->
 
 
 
-app.showNext(homeView, false)
+app.showNext(fitView, false)
 
 app.bringToFront()
