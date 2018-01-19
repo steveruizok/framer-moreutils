@@ -1,13 +1,15 @@
 { Icon } = require 'Icon'
 require 'moreutils'
 
-Framer.Extras.Hints.disable()
-Framer.Extras.Preloader.disable()
-Screen.backgroundColor = '#eee'
 
 
 # ----------------
-# text styles
+# setup
+
+# Framer
+Framer.Extras.Hints.disable()
+Framer.Extras.Preloader.disable()
+Screen.backgroundColor = '#eee'
 
 # Styles
 
@@ -154,8 +156,6 @@ class Code extends MonoText
 	constructor: (options = {}) ->
 		_.defaults options, styles.code
 		super options
-
-
 
 # ----------------
 # components
@@ -507,9 +507,6 @@ Utils.build homeView, ->
 		icon: 'chevron-right'
 		
 	link.onTap -> app.showNext(gridView)
-	
-	
-	
 
 # Distribute View
 distributeView = new View
@@ -833,6 +830,8 @@ Utils.build alignView, ->
 		
 	@updateContent()
 
+
+
 # Constrain View
 constrainView = new View
 	name: 'Utils'
@@ -870,50 +869,52 @@ Utils.build constrainView, ->
 		time: .35
 		
 	anims = []
+	view = @
 	
 	setMoves = (layerA) ->
-		startX = layerA.x
-		startY = layerA.y
-		
-		xaxis0 = new Animation layerA,
-			x: startX + 16
-			width: 64
-			height: 96
-			options: animOptions
-		
-		xaxis1 = new Animation layerA,
-			x: startX - 16
-			width: 128
-			height: 96
-			options: animOptions
-		
-		xaxis2 = new Animation layerA,
-			x: startX
-			width: 96
-			height: 96
-			options: animOptions
-		
-		yaxis0 = new Animation layerA,
-			y: startY + 16
-			width: 96
-			height: 64
-			options: animOptions
-		
-		yaxis1 = new Animation layerA,
-			y: startY - 16
-			width: 96
-			height: 128
-			options: animOptions
-		
-		yaxis2 = new Animation layerA,
-			y: startY
-			width: 96
-			height: 96
-			options: animOptions
-		
-		anims.push xaxis0
-		
-		Utils.chainAnimations([xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2])
+		view.onDoubleTap =>
+			startX = layerA.x
+			startY = layerA.y
+			
+			xaxis0 = new Animation layerA,
+				x: startX + 16
+				width: 64
+				height: 96
+				options: _.assign _.clone(animOptions), { delay: 1 }
+			
+			xaxis1 = new Animation layerA,
+				x: startX - 16
+				width: 128
+				height: 96
+				options: animOptions
+			
+			xaxis2 = new Animation layerA,
+				x: startX
+				width: 96
+				height: 96
+				options: animOptions
+			
+			yaxis0 = new Animation layerA,
+				y: startY + 16
+				width: 96
+				height: 64
+				options: animOptions
+			
+			yaxis1 = new Animation layerA,
+				y: startY - 16
+				width: 96
+				height: 128
+				options: animOptions
+			
+			yaxis2 = new Animation layerA,
+				y: startY
+				width: 96
+				height: 96
+				options: animOptions
+			
+			anims.push xaxis0
+			
+			Utils.chainAnimations([xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2])
 	
 	animLayers = []
 	
@@ -1116,52 +1117,53 @@ Utils.build pinView, ->
 		time: .35
 		
 	anims = []
+	view = @
 	
-	setMoves = (layer) ->
-		
-		startX = layer.x
-		startY = layer.y
-		
-		xaxis0 = new Animation layer,
-			x: startX + 16
-			width: 64
-			height: 96
-			options: animOptions
-		
-		xaxis1 = new Animation layer,
-			x: startX - 16
-			width: 128
-			height: 96
-			options: animOptions
-		
-		xaxis2 = new Animation layer,
-			x: startX
-			width: 96
-			height: 96
-			options: animOptions
-		
-		
-		yaxis0 = new Animation layer,
-			y: startY + 16
-			width: 96
-			height: 64
-			options: animOptions
-		
-		yaxis1 = new Animation layer,
-			y: startY - 16
-			width: 96
-			height: 128
-			options: animOptions
-		
-		yaxis2 = new Animation layer,
-			y: startY
-			width: 96
-			height: 96
-			options: animOptions
+	setMoves = (layerA) ->
+		view.onDoubleTap =>
+			startX = layer.x
+			startY = layer.y
 			
-		anims.push(xaxis0)
-		
-		Utils.chainAnimations([xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2])
+			xaxis0 = new Animation layer,
+				x: startX + 16
+				width: 64
+				height: 96
+				options: animOptions
+			
+			xaxis1 = new Animation layer,
+				x: startX - 16
+				width: 128
+				height: 96
+				options: animOptions
+			
+			xaxis2 = new Animation layer,
+				x: startX
+				width: 96
+				height: 96
+				options: animOptions
+			
+			
+			yaxis0 = new Animation layer,
+				y: startY + 16
+				width: 96
+				height: 64
+				options: animOptions
+			
+			yaxis1 = new Animation layer,
+				y: startY - 16
+				width: 96
+				height: 128
+				options: animOptions
+			
+			yaxis2 = new Animation layer,
+				y: startY
+				width: 96
+				height: 96
+				options: animOptions
+				
+			anims.push(xaxis0)
+			
+			Utils.chainAnimations([xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2])
 	
 	animLayers = []
 	

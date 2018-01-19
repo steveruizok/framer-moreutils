@@ -6,7 +6,7 @@ _.assign Utils,
 	# @example    Utils.pin(layerA, layerB, ['left', 'right'], 8)
 	pin: (layer, targetLayer, directions, distance) ->
 		if not _.isArray(directions) then directions = [directions]
-		
+
 		for direction in directions
 			do (layer, targetLayer, direction, distance) ->
 				switch direction
