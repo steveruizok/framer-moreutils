@@ -368,4 +368,29 @@ _.assign Utils,
 					animations[i + 1]?.start()
 			
 		Utils.delay 0, -> animations[0].start()
+
+	# Check whether a point exists within a polygon, defined by an array of points
+	# Note: this replaces Framer's existing (but broken) Utils.pointInPolygon method.
+	# @example	Utils.pointInPolgygon({x: 2, y: 12}, [])
+	Utils.pointInPolygon = (point, vs = []) ->
 	
+		if vs[0].x? then vs = _.map vs, (p) -> [p.x, p.y]
+	
+		# determine whether to analyze points in counterclockwise order
+		ccw = (A,B,C) -> return (C[1]-A[1])*(B[0]-A[0]) > (B[1]-A[1])*(C[0]-A[0])
+
+		# determine whether two lines intersect
+		intersect = (A,B,C,D) -> return (ccw(A,C,D) isnt ccw(B,C,D)) and (ccw(A,B,C) isnt ccw(A,B,D))
+		
+		intersections = 0
+		i = 0
+		j = vs.length - 1
+		
+		while i < vs.length
+		
+			if intersect([0, point.y], [point.x, point.y], vs[i], vs[j])
+				intersections += 1
+			j = i++
+		
+		return intersections % 2 is 1
+		
