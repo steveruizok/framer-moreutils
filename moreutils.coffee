@@ -372,7 +372,7 @@ _.assign Utils,
 	# Check whether a point exists within a polygon, defined by an array of points
 	# Note: this replaces Framer's existing (but broken) Utils.pointInPolygon method.
 	# @example	Utils.pointInPolgygon({x: 2, y: 12}, [])
-	Utils.pointInPolygon = (point, vs = []) ->
+	pointInPolygon: (point, vs = []) ->
 	
 		if vs[0].x? then vs = _.map vs, (p) -> [p.x, p.y]
 	
@@ -393,4 +393,67 @@ _.assign Utils,
 			j = i++
 		
 		return intersections % 2 is 1
+
+
+	# Get the layer under a screen point. If multiple layers overlap, layers overlapped
+	# by their children will be ignored, and the layer with the highest index will be
+	# returned. Works best with event.contextPoint!
+	#
+	# @example	
+	#
+	# myLayer.onMouseMove (event) -> 
+	#	print Utils.getLayerAtPoint(event.contextPoint)
+	#
+	getLayerAtPoint: (point, array = Framer.CurrentContext._layers) ->
+		under = Utils.getLayersAtPoint(event.point, array)
 		
+		valid = []
+
+		for layer in under
+			if _.intersection(under, layer.children).length > 0
+				continue
+			valid.push(layer)
+
+		return _.maxBy(valid, 'index') ? null
+
+	# Get an array of all layers under a screen point. By default, it will check 
+	# all layers in the current Framer context; but you can specify your own array of
+	# layers instead. Works best with event.contextPoint!
+	#
+	# @example	
+	#
+	# myLayer.onMouseMove (event) -> 
+	#	print Utils.getLayersAtPoint(event.contextPoint)
+	#
+	getLayersAtPoint: (point, array = Framer.CurrentContext._layers) ->
+		
+		layers = []
+		
+		for layer, i in array
+			if Utils.pointInPolygon(point, Utils.pointsFromFrame(layer))
+				layers.push(layer)
+				
+		return layers
+
+	# Try to find the layer that owns a given HTML element. By default, it will check 
+	# all layers in the current Framer context; but you can specify your own array of
+	# layers instead.
+	#
+	# @example	
+	#
+	# document.addEventListener "mousemove", (event) -> 
+	#	print Utils.getLayerFromElement(event.target)
+	#
+	getLayerFromElement: (element, array = Framer.CurrentContext._layers) =>
+		return if not element
+		
+		findLayerElement = (element) ->
+			return if not element?.classList
+			
+			if element.classList.contains('framerLayer')
+				return element
+				
+			findLayerElement(element.parentNode)
+		
+		layerElement = findLayerElement(element)
+		return _.find(array, (l) -> l._element is layerElement) ? null
