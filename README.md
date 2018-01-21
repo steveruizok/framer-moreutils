@@ -56,7 +56,7 @@ Once the module has been installed, you can use these methods in your code the s
 
 In the documentation below, arguments between brackets are optional. For example, **Utils.chainAnimations** takes two arguments: an array of layers and a boolean (true or false) for whether or not the chain should loop. The second argument is set to `true` by default, so your calls to  only have to provide this element when you want to the chain *not* to loop — or if you're feeling verbose. Either way, because the method will work without the second argument, we document it as **Utils.chainAnimations(layers, [animate])**, with brackets to show that the animate argument is optional.
 
-#### Utils.pin(layer, targetLayer, directions...)
+### Utils.pin(layer, targetLayer, directions...)
 
 Fixes **layerA**'s position relative to **layerB**. If layerB ever moves or changes, layerA will move with it in order to preserve this position. For the **directions** argument, you may use one or more directions: `'left'`, `'right'`, `'top'` or `'bottom'`). 
 
@@ -66,7 +66,7 @@ If multiple pins conflict, such as a pin to the `'top', 'bottom'`, only the last
 Utils.pin(layerA, layerB, 'left')
 Utils.pin(layerA, layerB, 'left', 'top')
 ```
-#### Utils.unpin(layer, [targetLayer, direction])
+### Utils.unpin(layer, [targetLayer, direction])
 
 Removes **layerA**'s pin relationships. If the optional argument with **layerB** is provided, only those relationships with **layerB** will be removed; likewise, if **layerA** has multiple pins to **layerB**, the **directions** argument can be used to remove specific pins.
 
@@ -85,7 +85,7 @@ Utils.unpin(layerA, layerB, 'left')
 # removes only layerA's left pin to layerB
 # layerA is still pinned to layerB's top
 ```
-#### Utils.constrain(layer, constraints...)
+### Utils.constrain(layer, constraints...)
 
 Set a **layer**'s constraints, relative to its parent. This works the same as setting constraints in Design mode, where a **layer** may be constrained by one or more **constraints**. These are its parent's edges (`left`, `top`, `right`, `bottom`) or its parent's dimensions (`height`, `width`) and it may be set to preserve its `aspectRatio` as well. This method accepts as many **constraints** arguments as needed. 
 
