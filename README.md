@@ -48,9 +48,11 @@ Super handy helper functions for your Framer projects.
 
 # Usage
 
-Framer uses an object called `Utils` to store common utility functions, such as `Utils.delay`. The moreutils module adds new methods to this `Utils` object, such as `Utils.align`.
+Framer uses an object called `Utils` to store common utility functions, such as `Utils.delay`. When this module is installed, it adds several new methods to this `Utils` object, such as `Utils.align`.
 
-Once the module has been installed, you can use these methods in your code the same way you would a standard Utils method. For example,  `Utils.align(myLayers, 'x', '100')`. Each method works is documented in the section below.
+Once the module has been installed, you can use these methods in your code the same way you would a standard Utils method. For example,  `Utils.align(myLayers, 'x', '100')`. 
+
+Each method is documented in the section below.
 
 # Methods 
 
