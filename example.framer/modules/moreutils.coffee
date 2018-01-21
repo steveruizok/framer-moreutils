@@ -4,38 +4,33 @@ _.assign Utils,
 
 	# pin a layer to another layer, so that if that layer moves, the pinned layer moves with it
 	# @example    Utils.pin(layerA, layerB, ['left', 'right'], 8)
-	pin: (layer, targetLayer, directions, distance) ->
-		if not _.isArray(directions) then directions = [directions]
+	pin: (layer, targetLayer, directions...) ->
+		if directions.length > 2 
+			throw 'Utils.pin can only take two direction arguments (e.g. "left", "top"). Any more would conflict!'
 		
 		for direction in directions
-			do (layer, targetLayer, direction, distance) ->
+			do (layer, targetLayer, direction) ->
 				switch direction
 					when "left"
 						props = ['x']
 						lProp = 'maxX'
-						distance ?= targetLayer.x -
-							(layer.x + layer.width)
-						getDifference = -> targetLayer.screenFrame.x - distance
+						distance = targetLayer.x - (layer.x + layer.width)
+						getDifference = -> targetLayer.screenFrame.x
 					when "right"
 						props = ['x', 'width']
 						lProp = 'x'
-						distance ?= layer.x -
-							(targetLayer.x + targetLayer.width)
-						getDifference = -> distance +
-							(targetLayer.x + targetLayer.width) 
+						distance = layer.x - (targetLayer.x + targetLayer.width)
+						getDifference = -> targetLayer.x + targetLayer.width
 					when "top"
 						props = ['y']
 						lProp = 'maxY'
-						distance ?= targetLayer.y -
-							(layer.y + layer.height)
-						getDifference = -> targetLayer.y - distance
+						distance = targetLayer.y - (layer.y + layer.height)
+						getDifference = -> targetLayer.y
 					when "bottom"
 						props = ['y', 'height']
 						lProp = 'y'
-						distance ?= layer.y -
-							(targetLayer.y + targetLayer.height)
-						getDifference = -> distance + 
-							(targetLayer.y + targetLayer.height) 
+						distance = layer.y - (targetLayer.y + targetLayer.height)
+						getDifference = -> targetLayer.y + targetLayer.height
 					else
 						throw 'Utils.pin - directions can only be top, right, bottom or left.'
 				
@@ -50,7 +45,7 @@ _.assign Utils,
 					layer.pins ?= []
 					layer.pins.push(setPin)
 					
-					targetLayer.on setPin.event, setPin.func
+					targetLayer.on(setPin.event, setPin.func)
 	
 	
 	# Remove all of a layer's pins, or pins from a certain target layer and/or direction
@@ -69,11 +64,9 @@ _.assign Utils,
 
 	# Set a layer's contraints to its parent
 	# @example    Utils.constrain(layer, {left: true, top: true, asepectRatio: true})
-	constrain: (layer, opts, distance) ->
+	constrain: (layer, opts...) ->
 		if not layer.parent? then throw 'Utils.constrain requires a layer with a parent.'
 		
-		if not _.isArray(opts) then opts = [opts]
-
 		options =
 			left: false, 
 			top: false, 
@@ -109,11 +102,12 @@ _.assign Utils,
 		
 		layer.constraintValues = values
 
-	# execute a function that is bound to the target (keeps code a bit more dry)
-	# @example    Utils.build(layer, -> @name = 'My Layer')
-	build: (target, func) ->
+	# execute a function that is bound to the target (keeps code a bit more DRY)
+	# @example    Utils.bind(layer, -> @name = 'My Layer')
+	bind: (target, func) ->
 		do _.bind(func, target)
 	
+	build: @bind
 	
 	# define a property on the layer with a getter/setter that emits a change event,
 	# and optionally an initial value and callback
@@ -156,6 +150,8 @@ _.assign Utils,
 	distribute: (layers = [], property, start, end, animate = false) ->
 		
 		animate ?= typeof start is 'boolean' and start is true
+		start ?= _.minBy(array, property)?[property]
+		end ?= _.maxBy(array, property)?[property]
 		step = (end - start) / (layers.length - 1)
 		
 		if property is 'horizontal'
@@ -204,7 +200,7 @@ _.assign Utils,
 	
 	# arrange layers in an array into a grid, using a set number of columns and row/column margins
 	# @example    Utils.grid(layers, 4)
-	grid: (array = [], cols, rowMargin = 16, colMargin) ->
+	grid: (array = [], cols = 4, rowMargin = 16, colMargin) ->
 		
 		g =
 			x: array[0].x
@@ -310,8 +306,11 @@ _.assign Utils,
 	
 	# set a layer to the max property among an array of layers (usually children)
 	# @example    Utils.fit(layer, layer.children, 'maxY', 16)
-	fit: (layer, array = [], property, padding = 0) ->
-		layer[property] = (_.maxBy(array, property)?[property] ? 0) + padding
+	fit: (layer, array = [], props = [], padding = 0) ->
+		if not _.isArray(props) then props = [prop]
+		
+		for property in props
+			layer[property] = (_.maxBy(array, property)?[property] ? 0) + padding
 		
 		return array
 
@@ -357,17 +356,24 @@ _.assign Utils,
 	
 	# Chain an array of animations, optionally looping them
 	# @example    Utils.chainAnimations([arrayOfAnimations], false)
-	chainAnimations: (animations = [], looping = true) ->
+	chainAnimations: (animations...) ->
+		looping = true
+		
+		if typeof _.last(animations) is "boolean"
+			looping = animations.pop()
+		
+		j = animations.length - 1
 		for anim, i in animations
 			do (i, animations) ->
-				if anim is _.last(animations) and looping
+				if anim is animations[j] and looping
 					anim.onAnimationEnd ->
-						animations[0]?.start()
+						animations[0]?.reset()
+						Utils.delay 0, -> animations[0]?.start()
 				
 				anim.onAnimationEnd ->
-					animations[i + 1]?.start()
+					animations[i + 1]?.restart()
 			
-		Utils.delay 0, -> animations[0].start()
+		Utils.delay 0, -> animations[0].restart()
 
 	# Check whether a point exists within a polygon, defined by an array of points
 	# Note: this replaces Framer's existing (but broken) Utils.pointInPolygon method.
@@ -382,17 +388,28 @@ _.assign Utils,
 		# determine whether two lines intersect
 		intersect = (A,B,C,D) -> return (ccw(A,C,D) isnt ccw(B,C,D)) and (ccw(A,B,C) isnt ccw(A,B,D))
 		
-		intersections = 0
+		inside = false
 		i = 0
 		j = vs.length - 1
 		
 		while i < vs.length
 		
 			if intersect([0, point.y], [point.x, point.y], vs[i], vs[j])
-				intersections += 1
+				inside = !inside
 			j = i++
 		
-		return intersections % 2 is 1
+		return inside
+
+	# Checks whether a point is within a Layer's frame. Works best with event.contextPoint!
+	#
+	# @example	
+	#
+	# layer.onMouseMove (event) -> 
+	#	for buttonLayer in buttonLayers
+	#		print Utils.pointInLayer(buttonLayer)
+	#
+	pointInLayer: (point, layer) ->
+		return Utils.pointInPolygon(point, Utils.pointsFromFrame(layer))
 
 
 	# Get the layer under a screen point. If multiple layers overlap, layers overlapped
