@@ -56,7 +56,7 @@ Once the module has been installed, you can use these methods in your code the s
 
 In the documentation below, arguments between brackets are optional. For example, **Utils.chainAnimations** takes two arguments: an array of layers and a boolean (true or false) for whether or not the chain should loop. The second argument is set to `true` by default, so your calls to  only have to provide this element when you want to the chain *not* to loop — or if you're feeling verbose. Either way, because the method will work without the second argument, we document it as **Utils.chainAnimations(layers, [animate])**, with brackets to show that the animate argument is optional.
 
-## Utils.pin(layer, targetLayer, directions...)
+## Utils.pin(layerA, layerB, directions...)
 
 Fixes **layerA**'s position relative to **layerB**. If layerB ever moves or changes, layerA will move with it in order to preserve this position. For the **directions** argument, you may use one or more directions: `'left'`, `'right'`, `'top'` or `'bottom'`). 
 
@@ -66,7 +66,7 @@ If multiple pins conflict, such as a pin to the `'top', 'bottom'`, only the last
 Utils.pin(layerA, layerB, 'left')
 Utils.pin(layerA, layerB, 'left', 'top')
 ```
-## Utils.unpin(layer, [targetLayer, direction])
+## Utils.unpin(layerA, [layerB, direction])
 
 Removes **layerA**'s pin relationships. If the optional argument with **layerB** is provided, only those relationships with **layerB** will be removed; likewise, if **layerA** has multiple pins to **layerB**, the **directions** argument can be used to remove specific pins.
 
@@ -96,8 +96,6 @@ Utils.constrain(layerA, 'height')
 Utils.constrain(layerA, 'height', 'left', 'aspectRatio')
 ```
 
-#### Utils.bind(target, function)
-
 #### Utils.align([layers], property, target, animate)
 
 #### Utils.distribute(layers, property, start, end, animate)
@@ -111,6 +109,8 @@ Utils.constrain(layerA, 'height', 'left', 'aspectRatio')
 #### Utils.contain(layer, [padding])
 
 #### Utils.chainAnimations(animations, [looping])
+
+#### Utils.bind(target, function)
 
 #### Utils.pointInPolygon: (point, vertices)
 
