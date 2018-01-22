@@ -394,7 +394,7 @@ _.assign Utils,
 		
 		while i < vs.length
 		
-			if intersect([0, point.y], [point.x, point.y], vs[i], vs[j])
+			if intersect([-999999, point.y], [point.x, point.y], vs[i], vs[j])
 				inside = !inside
 			j = i++
 		
