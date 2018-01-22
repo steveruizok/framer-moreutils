@@ -107,7 +107,8 @@ _.assign Utils,
 	bind: (target, func) ->
 		do _.bind(func, target)
 	
-	build: @bind
+	# alias for bind
+	build: (target, func) -> @bind(target, func)
 	
 	# define a property on the layer with a getter/setter that emits a change event,
 	# and optionally an initial value and callback
