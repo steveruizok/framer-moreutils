@@ -475,3 +475,13 @@ _.assign Utils,
 		
 		layerElement = findLayerElement(element)
 		return _.find(array, (l) -> l._element is layerElement) ? null
+
+	# Get an ordinal for a date
+	getOrdinal: (number) ->
+		switch number % 10	
+			when 1 then return 'st'	
+			when 2 then return 'nd'	
+			when 3 then return 'rd'	
+			else return 'th'
+
+
