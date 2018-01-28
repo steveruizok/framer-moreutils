@@ -484,4 +484,5 @@ _.assign Utils,
 			when 3 then return 'rd'	
 			else return 'th'
 
-
+	px: (num) ->
+		return (num * Framer.Device.context.scale) + 'px'
