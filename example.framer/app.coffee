@@ -914,7 +914,7 @@ Utils.build constrainView, ->
 			
 			anims.push xaxis0
 			
-			Utils.chainAnimations([xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2])
+			Utils.chainAnimations(xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2)
 	
 	animLayers = []
 	
@@ -1119,7 +1119,7 @@ Utils.build pinView, ->
 	anims = []
 	view = @
 	
-	setMoves = (layerA) ->
+	setMoves = (layer) ->
 		view.onDoubleTap =>
 			startX = layer.x
 			startY = layer.y
@@ -1163,7 +1163,7 @@ Utils.build pinView, ->
 				
 			anims.push(xaxis0)
 			
-			Utils.chainAnimations([xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2])
+			Utils.chainAnimations(xaxis0, xaxis1, xaxis2, yaxis0, yaxis1, yaxis2)
 	
 	animLayers = []
 	
@@ -1304,37 +1304,12 @@ Utils.build pinView, ->
 		parent: @content
 		x: Align.center()
 		y: separators[4].y + 160
-		text: "Utils.pin(smLayer, lgLayer, ['bottom', 'left'])"
+		text: "Utils.pin(smLayer, lgLayer, 'bottom', 'left')"
 	
-	Utils.pin smLayer, lgLayer, ['bottom', 'left']
+	Utils.pin smLayer, lgLayer, 'bottom', 'left'
 	
 	setMoves(lgLayer)
-	
-	
-	# distance
-	
-	smLayer = new Layer
-		parent: @content
-		y: separators[5].y + 24
-		x: 48
-		width: 48
-		height: 48
-		borderWidth: 1
-		borderColor: '#00aaff'
-		backgroundColor: '#98d5ff'
-	
-	lgLayer = makeLgLayer(5)
 		
-	description = new Code
-		parent: @content
-		x: Align.center()
-		y: separators[5].y + 160
-		text: "Utils.pin(smLayer, lgLayer, 'left', 48)"
-	
-	Utils.pin smLayer, lgLayer, 'left', 48 
-	
-	setMoves(lgLayer)
-	
 	
 	
 	# unpin

@@ -128,6 +128,26 @@ _.assign Utils,
 		
 		layer[property] = value
 	
+	# same as Utils.define, but with an added validation callback for each new value, and
+	# an error to throw if validation is failed.
+	#
+	# @example	  Utils.define(layer, 'toggleStatus', false, _.isBoolean, "Toggle status must be true or false.", layer.setToggleStatus)
+	defineValid: (layer, property, value, validation, error, callback) ->
+		Object.defineProperty layer,
+			property,
+			get: -> return layer["_#{property}"]
+			set: (value) ->
+				if value?
+					if not validation(value) then throw error
+					return if value is layer["_#{property}"]
+	
+				layer["_#{property}"] = value
+				layer.emit("change:#{property}", value, layer)
+				
+		if callback? and typeof callback is 'function'
+			layer.on("change:#{property}", callback)
+		
+		layer[property] = value
 	
 	# set all layers in an array to the same property value
 	# @example    Utils.align(childLayers, 'midY', parent.midY)
@@ -477,12 +497,33 @@ _.assign Utils,
 		return _.find(array, (l) -> l._element is layerElement) ? null
 
 	# Get an ordinal for a date
+	#
+	# @example	
+	#
+	# num = 2
+	# date.text = num + Utils.getOrdinal(num)
+	#
 	getOrdinal: (number) ->
 		switch number % 10	
 			when 1 then return 'st'	
 			when 2 then return 'nd'	
 			when 3 then return 'rd'	
 			else return 'th'
-
+	
+	# Convert a number to the right number of pixels.
+	#
+	# @example	
+	#
+	# layer._element.style.borderWidth = Utils.px(4)
+	#
 	px: (num) ->
 		return (num * Framer.Device.context.scale) + 'px'
+
+	# Link layerB's property to always match layerA's property.
+	#
+	# @example	
+	#
+	# Utils.linkProperties(layerA, layerB, 'x')
+	#
+	linkProperties: (layerA, layerB, prop) =>
+		layerA.on "change:#{prop}", => layerB[prop] = layerA[prop]
