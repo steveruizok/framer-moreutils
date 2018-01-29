@@ -527,3 +527,48 @@ _.assign Utils,
 	#
 	linkProperties: (layerA, layerB, prop) =>
 		layerA.on "change:#{prop}", => layerB[prop] = layerA[prop]
+
+	# Create a timer instance to simplify intervals.
+	# Thanks to https://github.com/marckrenn.
+	#
+	# @example
+	#
+	# timer = new Utils.timer(1, -> print 'hello world!')
+	# Utils.delay 5, -> timer.pause()
+	# Utils.delay 8, -> timer.resume()
+	# Utils.delay 10, -> timer.restart()
+	#
+	timer: class Timer
+		constructor: (time, f) ->
+			@paused = false
+			@saveTime = null
+			@saveFunction = null
+
+			if time? and f?
+				@start(time, f)
+		
+		start: (time, f) =>
+			@saveTime = time
+			@saveFunction = f
+
+			f()
+			proxy = => f() unless @paused
+			unless @paused
+				@_id = timer = Utils.interval(time, proxy)
+			else return
+		
+		pause:   => @paused = true
+		resume:  => @paused = false
+		reset:   => clearInterval(@_id)
+		restart: => 
+			clearInterval(@_id)
+			@start(@saveTime, @saveFunction)
+	
+	# Set the attributes of a DOM element.
+	#
+	# @example
+	# Utils.setAttributes myHTMLInput, {autocorrect: 'off'}
+	#
+	setAttributes: (element, attributes = {}) ->
+		for key, value of attributes
+			element.setAttribute(key, value)
