@@ -563,3 +563,12 @@ _.assign Utils,
 		restart: => 
 			clearInterval(@_id)
 			@start(@saveTime, @saveFunction)
+	
+	# Set the attributes of a DOM element.
+	#
+	# @example
+	# Utils.setAttributes myHTMLInput, {autocorrect: 'off'}
+	#
+	setAttributes: (element, attributes = {}) ->
+		for key, value of attributes
+			element.setAttribute(key, value)
