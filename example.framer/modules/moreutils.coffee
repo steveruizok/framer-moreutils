@@ -52,6 +52,8 @@ _.assign Utils,
 	# @example    Utils.unpin(layer)
 	unpin: (layer, targetLayer, direction) ->
 		
+		lB.setPosition 
+
 		setPins = _.filter layer.pins, (p) ->
 			isLayer = if targetLayer? then p.targetLayer is targetLayer else true
 			isDirection = if direction? then p.direction is direction else true
@@ -61,6 +63,20 @@ _.assign Utils,
 		for setPin in setPins
 			setPin.targetLayer.off(setPin.event, setPin.func)
 	
+	# Pin layer to another layer, based on the size of 
+	# @example    Utils.unpin(layer)
+	pinOrigin: (lA, lB, undo = false) ->
+		if undo
+			lB.off "change:size", lA.setPosition 
+			return
+
+		lA.setPosition = ->
+			lA.x = (lB.width - lA.width) * lA.originX
+			lA.y = (lB.height - lA.height) * lA.originY
+		
+		lA.setPosition()
+		
+		lB.on "change:size", lA.setPosition
 
 	# Set a layer's contraints to its parent
 	# @example    Utils.constrain(layer, {left: true, top: true, asepectRatio: true})
