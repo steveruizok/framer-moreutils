@@ -6,6 +6,8 @@ Super handy helper functions for your Framer projects.
 
 **[Unpin](#Utils.unpin(layer,-[targetLayer,-direction]))**: Remove a layer's pin relationship
 
+**PinOrigin**: Set a layer's relative position to another layer, based on its originX and originY properties.
+
 **[Constrain](#Utils.constrain(layer,-constraints...))**: Set a layer's constraints, relative to its parent
 
 **Align**: Set all layers in an array to the same property value
@@ -33,6 +35,10 @@ Super handy helper functions for your Framer projects.
 **Bind**: Bind a function to a target
 
 **Define**: Create a new layer property that emits an event when it changes
+
+**DefineValid**: Create a new layer property with validation
+
+**SetAttributes**: Set the attributes of an DOM element.
 
 
 
@@ -98,6 +104,8 @@ Utils.constrain(layerA, 'height')
 Utils.constrain(layerA, 'height', 'left', 'aspectRatio')
 ```
 
+#### Utils.pinOrigin(layerA, layerB, [undo])
+
 #### Utils.align([layers], property, target, animate)
 
 #### Utils.distribute(layers, property, start, end, animate)
@@ -121,3 +129,9 @@ Utils.constrain(layerA, 'height', 'left', 'aspectRatio')
 #### Utils.getLayersAtPoint: (point, [layers])
 
 #### Utils.getLayerFromElement: (element, [layers])
+
+#### Utils.define: (layer, property, [value, callback])
+
+#### Utils.defineValid: (layer, property, value, validation, error, [callback])
+
+#### Utils.setAttributes: (element, properties)
