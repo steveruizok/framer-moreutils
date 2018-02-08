@@ -14,23 +14,23 @@ _.assign Utils,
 					when "left"
 						props = ['x']
 						lProp = 'maxX'
-						distance = targetLayer.x - (layer.x + layer.width)
+						distance = distance + targetLayer.x - (layer.x + layer.width)
 						getDifference = -> targetLayer.screenFrame.x
 					when "right"
 						props = ['x', 'width']
 						lProp = 'x'
-						distance = layer.x - (targetLayer.x + targetLayer.width)
+						distance = distance + layer.x - (targetLayer.x + targetLayer.width)
 						getDifference = -> targetLayer.x + targetLayer.width
 					when "top"
 						props = ['y']
 						lProp = 'maxY'
-						distance = targetLayer.y - (layer.y + layer.height)
+						distance = distance + targetLayer.y - (layer.y + layer.height)
 						getDifference = -> targetLayer.y
 					when "bottom"
 						props = ['y', 'height']
 						lProp = 'y'
 						distance = layer.y - (targetLayer.y + targetLayer.height)
-						getDifference = -> targetLayer.y + targetLayer.height
+						getDifference = -> distance + targetLayer.y + targetLayer.height
 					else
 						throw 'Utils.pin - directions can only be top, right, bottom or left.'
 				
@@ -52,8 +52,6 @@ _.assign Utils,
 	# @example    Utils.unpin(layer)
 	unpin: (layer, targetLayer, direction) ->
 		
-		lB.setPosition 
-
 		setPins = _.filter layer.pins, (p) ->
 			isLayer = if targetLayer? then p.targetLayer is targetLayer else true
 			isDirection = if direction? then p.direction is direction else true
@@ -63,8 +61,8 @@ _.assign Utils,
 		for setPin in setPins
 			setPin.targetLayer.off(setPin.event, setPin.func)
 	
-	# Pin layer to another layer, based on the size of 
-	# @example    Utils.unpin(layer)
+	# Pin layer to another layer, based on the layer's origin
+	# @example    Utils.pinOrigin(layerA, layerB)
 	pinOrigin: (lA, lB, undo = false) ->
 		if undo
 			lB.off "change:size", lA.setPosition 
@@ -72,6 +70,36 @@ _.assign Utils,
 
 		lA.setPosition = ->
 			lA.x = (lB.width - lA.width) * lA.originX
+			lA.y = (lB.height - lA.height) * lA.originY
+		
+		lA.setPosition()
+		
+		lB.on "change:size", lA.setPosition
+
+
+	# Pin layer to another layer, based on the layer's origin
+	# @example    Utils.pinOriginX(layerA, layerB)
+	pinOriginX: (lA, lB, undo = false) ->
+		if undo
+			lB.off "change:size", lA.setPosition 
+			return
+
+		lA.setPosition = ->
+			lA.x = (lB.width - lA.width) * lA.originX
+		
+		lA.setPosition()
+		
+		lB.on "change:size", lA.setPosition
+
+
+	# Pin layer to another layer, based on the layer's origin
+	# @example    Utils.pinOriginY(layerA, layerB)
+	pinOriginY: (lA, lB, undo = false) ->
+		if undo
+			lB.off "change:size", lA.setPosition 
+			return
+
+		lA.setPosition = ->
 			lA.y = (lB.height - lA.height) * lA.originY
 		
 		lA.setPosition()
