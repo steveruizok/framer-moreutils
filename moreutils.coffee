@@ -610,6 +610,25 @@ _.assign Utils,
 			clearInterval(@_id)
 			Utils.delay 0, => @start(@saveTime, @saveFunction)
 	
+	# Copy text to the clipboard.
+	#
+	# @example
+	# Utils.copyTextToClipboard(myTextLayer.text)
+	#
+	copyTextToClipboard: (text) ->
+		copyElement = document.createElement "textarea"
+		copyElement.style.opacity = 0
+
+		ctx = document.getElementsByClassName("framerContext")[0]
+		ctx.appendChild(copyElement)
+
+		copyElement.value = text
+		copyElement.select()
+		document.execCommand('copy')
+		copyElement.blur()
+
+		ctx.removeChild(copyElement)
+	
 	# Set the attributes of a DOM element.
 	#
 	# @example
