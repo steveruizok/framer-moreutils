@@ -628,6 +628,23 @@ _.assign Utils,
 		copyElement.blur()
 
 		ctx.removeChild(copyElement)
+
+	# Run a URL through Framer's CORSproxy, to prevent cross-origin issues.
+	# Thanks to @marckrenn: https://goo.gl/UhFw9y
+	#
+	# @example
+	# fetch(Utils.CORSproxy(url)).then(callback)
+	#
+	CORSproxy: (url) ->
+
+		# Detect local IPv4/IvP6 addresses
+		# https://stackoverflow.com/a/11327345
+		regexp = /(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)|(^[fF][cCdD])/
+
+		if regexp.test(window.location.hostname)
+			return "http://#{window.location.host}/_server/proxy/#{url}"
+		
+		return "https://cors-anywhere.herokuapp.com/#{url}"
 	
 	# Set the attributes of a DOM element.
 	#
