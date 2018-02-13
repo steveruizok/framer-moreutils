@@ -1026,9 +1026,9 @@ Utils.build constrainView, ->
 	
 	parent = makeParent(6)
 	child = makeChild(parent)
-	makeDescription 6, "Utils.constrain(layer, ['width', 'top'])"
+	makeDescription 6, "Utils.constrain(layer, 'width', 'top')"
 	
-	Utils.constrain child, ['width', 'top']
+	Utils.constrain child, 'width', 'top'
 		
 	setMoves(parent, child)
 	
@@ -1042,10 +1042,10 @@ Utils.build constrainView, ->
 		parent: @content
 		x: Align.center()
 		y: separators[7].y + 160
-		text: "Utils.constrain(layer, ['left', 'aspectRatio'])"
+		text: "Utils.constrain(layer, 'left', 'aspectRatio')"
 		fontSize: 10
 	
-	Utils.constrain child, ['width', 'aspectRatio']
+	Utils.constrain child, 'width', 'aspectRatio'
 		
 	setMoves(parent, child)
 	
@@ -1059,11 +1059,11 @@ Utils.build constrainView, ->
 		parent: @content
 		x: Align.center()
 		y: separators[8].y + 160
-		text: "Utils.constrain(layer, ['height', 'aspectRatio'])"
+		text: "Utils.constrain(layer, 'height', 'aspectRatio')"
 		fontSize: 10
 	
-	Utils.constrain child, ['height', 'aspectRatio']
-		
+	Utils.constrain child, 'height', 'aspectRatio'
+			
 	setMoves(parent, child)
 	
 	@updateContent()
