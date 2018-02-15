@@ -654,3 +654,65 @@ _.assign Utils,
 	setAttributes: (element, attributes = {}) ->
 		for key, value of attributes
 			element.setAttribute(key, value)
+	
+	# Use inline styles with a TextLayer.
+	#
+	# @example
+	# myTextLayer.text = "This is a **bold** statement."
+	# Utils.toMarkdown(myTextLayer)
+	#
+	toMarkdown: (textLayer) ->
+		if textLayer.constructor.name isnt "TextLayer"
+			throw "Utils.mdStyles only works with TextLayers"
+		
+		el = textLayer._element.children[1].children[0].children[0]
+		string = el.innerHTML
+
+		loopString = (string, reg) ->
+			if not string.match(reg[0])
+				return string 
+
+			loopString(string.replace(reg[0], reg[1]), reg)
+
+		
+		[
+			[/\[([^\[]+)\]\(([^\)]+)\)/, '<a href=\'$2\'>$1</a>']
+			[/(\*\*|__)(.*?)\1/, '<strong>$2</strong>']
+			[/(\*|_)(.*?)\1/, '<i>$2</i>']
+			[/\~\~(.*?)\~\~/, '<del>$1</del>']
+			[/`(.*?)`/, '<code>$1</code>']
+		].forEach (reg) -> 
+			string = loopString(string, reg)
+		
+		el.innerHTML = string
+		textLayer.emit "change:text", string, textLayer
+		
+		do _.bind( ->
+			forceRender = false
+			@_updateHTMLScale()
+			if not @autoSize
+				if @width < @_elementHTML.clientWidth or @height < @_elementHTML.clientHeight
+					@clip = true
+			return unless forceRender or @autoHeight or @autoWidth or @textOverflow isnt null
+			parentWidth = if @parent? then @parent.width else Screen.width
+			constrainedWidth = if @autoWidth then parentWidth else @size.width
+			padding = Utils.rectZero(Utils.parseRect(@padding))
+			constrainedWidth -= (padding.left + padding.right)
+			if @autoHeight
+				constrainedHeight = null
+			else
+				constrainedHeight = @size.height - (padding.top + padding.bottom)
+			constraints =
+				width: constrainedWidth
+				height: constrainedHeight
+				multiplier: @context.pixelMultiplier
+
+			calculatedSize = @_styledText.measure constraints
+			@disableAutosizeUpdating = true
+			if calculatedSize.width?
+				@width = calculatedSize.width + padding.left + padding.right
+			if calculatedSize.height?
+				@height = calculatedSize.height + padding.top + padding.bottom
+			@disableAutosizeUpdating = false
+		, textLayer)
+

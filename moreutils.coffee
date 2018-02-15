@@ -667,6 +667,13 @@ _.assign Utils,
 		
 		el = textLayer._element.children[1].children[0].children[0]
 		string = el.innerHTML
+
+		loopString = (string, reg) ->
+			if not string.match(reg[0])
+				return string 
+
+			loopString(string.replace(reg[0], reg[1]), reg)
+
 		
 		[
 			[/\[([^\[]+)\]\(([^\)]+)\)/, '<a href=\'$2\'>$1</a>']
@@ -674,7 +681,8 @@ _.assign Utils,
 			[/(\*|_)(.*?)\1/, '<i>$2</i>']
 			[/\~\~(.*?)\~\~/, '<del>$1</del>']
 			[/`(.*?)`/, '<code>$1</code>']
-		].forEach (reg) -> string = string.replace(reg[0], reg[1])
+		].forEach (reg) -> 
+			string = loopString(string, reg)
 		
 		el.innerHTML = string
 		textLayer.emit "change:text", string, textLayer
