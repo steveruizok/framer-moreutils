@@ -2,10 +2,11 @@
   "orientation" : 0,
   "updateDelay" : 0.29999999999999999,
   "designModeSelected" : 0,
-  "cachedDeviceHeight" : 0,
+  "cachedDeviceHeight" : 667,
   "contentScale" : 1,
-  "cachedDeviceWidth" : 0,
-  "deviceType" : "fullscreen",
+  "cachedDeviceWidth" : 375,
+  "fullScreen" : false,
+  "deviceType" : "apple-iphone-8-space-gray",
   "sharedPrototype" : 0,
   "propertyPanelToggleStates" : {
 
@@ -24,11 +25,11 @@
     "{6420, 2025}",
     "{8446, 4409}",
     "{12856, 2967}",
-    "{15824, 4342}",
-    "{20167, 4564}",
-    "{24732, 4870}",
-    "{29603, 1202}",
-    "{30806, 743}"
+    "{15824, 4331}",
+    "{20156, 4564}",
+    "{24721, 4870}",
+    "{29592, 1202}",
+    "{30795, 743}"
   ],
-  "deviceScale" : 1
+  "deviceScale" : "fit"
 }
