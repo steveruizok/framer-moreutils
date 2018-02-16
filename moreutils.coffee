@@ -662,11 +662,9 @@ _.assign Utils,
 	# Utils.toMarkdown(myTextLayer)
 	#
 	toMarkdown: (textLayer) ->
+		
 		if textLayer.constructor.name isnt "TextLayer"
 			throw "Utils.mdStyles only works with TextLayers"
-		
-		el = textLayer._element.children[1].children[0].children[0]
-		string = el.innerHTML
 
 		loopString = (string, reg) ->
 			if not string.match(reg[0])
@@ -674,18 +672,16 @@ _.assign Utils,
 
 			loopString(string.replace(reg[0], reg[1]), reg)
 
-		
-		[
+		regexes = [
 			[/\[([^\[]+)\]\(([^\)]+)\)/, '<a href=\'$2\'>$1</a>']
 			[/(\*\*|__)(.*?)\1/, '<strong>$2</strong>']
 			[/(\*|_)(.*?)\1/, '<i>$2</i>']
 			[/\~\~(.*?)\~\~/, '<del>$1</del>']
 			[/`(.*?)`/, '<code>$1</code>']
-		].forEach (reg) -> 
-			string = loopString(string, reg)
-		
-		el.innerHTML = string
-		textLayer.emit "change:text", string, textLayer
+			]
+
+		for el in textLayer._element.children[1].childNodes
+			el.childNodes[0].innerHTML = _.reduce(regexes, loopString, el.childNodes[0].innerHTML)
 		
 		do _.bind( ->
 			forceRender = false
@@ -715,4 +711,7 @@ _.assign Utils,
 				@height = calculatedSize.height + padding.top + padding.bottom
 			@disableAutosizeUpdating = false
 		, textLayer)
+			
+		textLayer.emit "change:text", textLayer.text, textLayer
+
 
