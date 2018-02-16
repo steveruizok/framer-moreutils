@@ -664,7 +664,7 @@ _.assign Utils,
 	toMarkdown: (textLayer) ->
 		
 		if textLayer.constructor.name isnt "TextLayer"
-			throw "Utils.mdStyles only works with TextLayers"
+			throw "Utils.toMarkdown only works with TextLayers."
 
 		loopString = (string, reg) ->
 			if not string.match(reg[0])
