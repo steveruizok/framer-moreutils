@@ -663,7 +663,7 @@ _.assign Utils,
 	#
 	toMarkdown: (textLayer) ->
 		
-		if textLayer.constructor.name isnt "TextLayer"
+		if not textLayer instanceof TextLayer
 			throw "Utils.toMarkdown only works with TextLayers."
 
 		loopString = (string, reg) ->
