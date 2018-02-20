@@ -38,7 +38,21 @@ Super handy helper functions for your Framer projects.
 
 **DefineValid**: Create a new layer property with validation
 
-**SetAttributes**: Set the attributes of an DOM element.
+**SetAttributes**: Set the attributes of an DOM element
+
+**toMarkdown**: Set styles in a TextLayer, using (limited) Markdown syntax
+
+**CORSproxy**: Convert a URL into one that won't throw a cross-origin error
+
+**copyTextToClipboard**: Copy a string into the user's clipboard
+
+**timer**: Create a timer instance with a simple start/pause/resume/reset/restart methods
+
+**linkProperties**: When the specified property on one layer' changes, the second Layer will match it
+
+**px**: Get the correct pixel string for the given context scale
+
+**getOrdinal**: Will return the correct ordinal ('st', 'nd', 'rd', 'th) for a number
 
 
 
