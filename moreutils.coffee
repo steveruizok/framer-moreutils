@@ -14,26 +14,25 @@ _.assign Utils,
 					when "left"
 						props = ['x']
 						lProp = 'maxX'
-						distance = distance + targetLayer.x - (layer.x + layer.width)
-						getDifference = -> targetLayer.screenFrame.x
+						distance = targetLayer.x - (layer.maxX)
+						getDifference = -> targetLayer.x - distance
 					when "right"
 						props = ['x', 'width']
 						lProp = 'x'
-						distance = distance + layer.x - (targetLayer.x + targetLayer.width)
-						getDifference = -> targetLayer.x + targetLayer.width
+						distance = layer.x - (targetLayer.maxX)
+						getDifference = -> targetLayer.maxX + distance
 					when "top"
 						props = ['y']
 						lProp = 'maxY'
-						distance = distance + targetLayer.y - (layer.y + layer.height)
-						getDifference = -> targetLayer.y
+						distance = targetLayer.y - (layer.maxY)
+						getDifference = -> targetLayer.y - distance
 					when "bottom"
 						props = ['y', 'height']
 						lProp = 'y'
-						distance = layer.y - (targetLayer.y + targetLayer.height)
-						getDifference = -> distance + targetLayer.y + targetLayer.height
+						distance = layer.y - (targetLayer.maxY)
+						getDifference = -> targetLayer.maxY + distance
 					else
 						throw 'Utils.pin - directions can only be top, right, bottom or left.'
-				
 				
 				for prop in props
 					setPin =
