@@ -54,6 +54,11 @@ Super handy helper functions for your Framer projects.
 
 **getOrdinal**: Will return the correct ordinal ('st', 'nd', 'rd', 'th) for a number
 
+**fetch**: Make an asynchronous call to a URL and return a Response
+
+**fetchJSON**: Make an asynchronous call to a URL and return data as a JSON object
+
+**randomText**: Get lorem text at the specified length, optionally in sentences
 
 
 # Installation
