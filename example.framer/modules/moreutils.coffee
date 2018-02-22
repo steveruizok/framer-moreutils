@@ -350,17 +350,17 @@ Offset an array of layers vertically.
 Utils.offsetY = (layers = [], distance = 0, animate = false, animationOptions = {}) -> 
 	
 	startY = layers[0].y
-	yValues = []
-	yValues = layers.map (layer, i) ->
+	values = []
+	values = layers.map (layer, i) ->
 		v = {y: startY}
 		startY += layer.height + distance
 		return v
 		
 	for layer, i in layers
 		if animate
-			layer.animate yValues[i], animationOptions
+			layer.animate values[i], animationOptions
 		else
-			_.assign layer, yValues[i]
+			_.assign layer, values[i]
 
 ###
 Offset an array of layers horizontally.
@@ -381,17 +381,17 @@ Offset an array of layers horizontally.
 Utils.offsetX= (layers = [], distance = 0, animate = false, animationOptions = {}) -> 
 	
 	startX = layers[0].x
-	xValues = []
-	xValues = layers.map (layer, i) ->
+	values = []
+	values = layers.map (layer, i) ->
 		v = {x: startX}
 		startX += layer.width + distance
 		return v
 		
 	for layer, i in layers
 		if animate
-			layer.animate xValues[i], animationOptions
+			layer.animate values[i], animationOptions
 		else
-			_.assign layer, xValues[i]
+			_.assign layer, values[i]
 
 
 # arrange layers in an array into a grid, using a set number of columns and row/column margins
@@ -500,41 +500,41 @@ Utils.makeGrid = (layer, cols = 4, rows = 1, rowMargin, colMargin) ->
 	return g
 
 
-# set a layer to the max property among an array of layers (usually children)
-# @example    Utils.fit(layer, layer.children, 'maxY', 16)
-Utils.fit = (layer, array = [], props = [], padding = 0) ->
-	if not _.isArray(props) then props = [prop]
-	
-	for property in props
-		layer[property] = (_.maxBy(array, property)?[property] ? 0) + padding
-	
-	return array
 
-# set a layer to contain its children
-# @example    Utils.contain(layer)
-Utils.contain = (layer, padding = {}, xPadding) ->
-	if typeof padding is 'number'
-		padding = {
+###
+Change a layer's size to fit around the layer's children.
+
+@param {Layer} layer The parent layer to change.osition.
+@param {Object} [padding] The padding to use for the hug.
+
+	Utils.hug(layerA)
+
+	Utils.hug(layerA, 32)
+
+	Utils.hug(layerA, {top: 16, bottom: 24})
+###
+Utils.hug = (layer, padding = {}) ->
+
+	if typeof padding is "number"
+		padding = 
 			top: padding
-			right: xPadding ? padding
+			right: padding
 			bottom: padding
-			left: xPadding ? padding
-		}
+			left: padding
 
-	_.defaults padding, {top: 0, right: 0, bottom: 0, left: 0}
+	top = _.minBy(layer.children, 'y').y 
+	bottom = _.maxBy(layer.children, 'maxY').maxY
 
-	xDiff = (_.minBy(layer.children, 'x')?.x ? 0) - padding.left
-	yDiff = (_.minBy(layer.children, 'y')?.y ? 0) - padding.top
-
-	for child in layer.children
-		child.x -= xDiff
-		child.y -= yDiff
+	left = _.minBy(layer.children, 'x').x 
+	right = _.maxBy(layer.children, 'maxX').maxX
 
 	_.assign layer,
-		x: layer.x + xDiff
-		y: layer.y + yDiff
-		width: (_.maxBy(layer.children, 'maxX')?.maxX ? 0) + padding.right
-		height: (_.maxBy(layer.children, 'maxY')?.maxY ? 0) + padding.bottom
+		width: (bottom - top) + (padding.top ? 0) + (padding.bottom ? 0)
+		height: (right - left) + (padding.left ? 0) + (padding.right ? 0)
+
+	for child in layer.children
+		child.y = top + (child.y - top) + (padding.top ? 0)
+		child.x = left + (child.x - left) + (padding.left ? 0)
 
 
 # get a status color based on a standard deviation
@@ -570,6 +570,7 @@ Utils.chainAnimations = (animations...) ->
 				animations[i + 1]?.restart()
 		
 	Utils.delay 0, -> animations[0].restart()
+
 
 # Check whether a point exists within a polygon, defined by an array of points
 # Note: this replaces Framer's existing (but broken) Utils.pointInPolygon method.
@@ -889,14 +890,16 @@ Utils.fetchJSON = (url, callback) ->
 #	» "Soluta dolor tempore pariatur."
 #
 # @ param [Integer] words The number of words to return
-# @ param [Boolean] sentences Whether to split the words into sentences
-Utils.randomText = (words = 12, sentences = false) ->
-	text = _.sampleSize(loremSource, words)
+# @ param [Boolean] [sentences] Whether to split the words into sentences
+# @ param [Boolean] [paragraphs] Whether to split the words into paragraphs
+#
+Utils.randomText = (words = 12, sentences = false, paragraphs = false) ->
+	text = Array.from({length: words}, -> _.sample(loremSource))
 
 	unless sentences 
 		return text.join(' ')
 
-	# sentences
+	# make sentences
 
 	sentences = []
 
@@ -908,9 +911,43 @@ Utils.randomText = (words = 12, sentences = false) ->
 		length = _.clamp(_.random(3, 6), 0, text.length)
 		sentences.push(_.pullAt(text, [0...length]))
 
-	return sentences.map( (a) ->
-		_.capitalize( a.join(' ') ) + '.'
-		).join(' ')
+	
+	unless paragraphs
+		return sentences.map( (a) ->
+			_.capitalize( a.join(' ') ) + '.'
+			).join(' ')
+
+	# make paragraphs
+
+	paragraphs = []
+
+	while sentences.length > 0
+		if sentences.length <= 3
+			_.sample(paragraphs).push(sentences.pop())
+			continue 
+
+		length = _.clamp(_.random(3, 6), 0, sentences.length)
+		paragraphs.push(_.pullAt(sentences, [0...length]))
+
+	# Make text
+
+	text = ''
+
+	for paragraph in paragraphs
+		text += _.reduce(
+			paragraph,
+			(string, sentence) ->
+				string += _.capitalize( sentence.join(' ') ) + '. '
+			'').trim() + '\n\n'
+
+	return text
+
+# Check whether a string is a valid email.
+#
+# @param {String} string The string to check.
+Utils.isEmail = (string) ->
+    return string.toLowerCase().match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+
 
 # Source words for Utils.randomText()
 #
