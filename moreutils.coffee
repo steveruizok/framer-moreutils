@@ -256,7 +256,7 @@ Utils.define = (layer, property, value, callback, validation, error) ->
 ###
 Set all layers in an array to the same property or properties.
 
-@param {Array} array The array of layers to align.
+@param {Array} layers The array of layers to align.
 @param {Object} options The properties to set.
 @param {Boolean} [animate] Whether to animate to the new property.
 @param {Object} [animationOptions] The animation options to use.
@@ -269,65 +269,129 @@ Set all layers in an array to the same property or properties.
 		true
 		time: .5
 ###
-Utils.align = (array = [], options = {}, animate = false, animationOptions = {}) ->
-	for layer, i in array
+Utils.align = (layers = [], direction, animate, animationOptions = {}) -> 
+	options = switch direction
+		when "top" then {y: _.minBy(layers, 'y').y}
+		when "middle" then {midY: _.sumBy(layers, 'midY')/layers.length}
+		when "bottom" then {maxY: _.maxBy(layers, 'maxY').maxY}
+		when "left" then {x: _.minBy(layers, 'x').x}
+		when "center" then {midX: _.sumBy(layers, 'midX')/layers.length}
+		when "right" then {maxX: _.maxBy(layers, 'maxX').maxX}
+		else {}
+
+	for layer, i in layers
 		if animate
 			layer.animate options, animationOptions
 		else
 			_.assign layer, options
 
+###
+Distribute an array of layers between two values.
 
-# distribute layers in an array between two values
-# @example    Utils.distribute(childLayers, 'midX', parent.x + 32, parent.width - 32)
-Utils.distribute = (layers = [], property, start, end, animate = false) ->
+@param {Array} layers The array of layers to distribute.
+@param {String} property The property to distribute.
+@param {Object} [start] The value to start from. By default, the lowest value of the given property among the layers array.
+@param {Object} [end] The value to distribute to. By default, the highest value of the given property among the layers array.
+@param {Boolean} [animate] Whether to animate to the new property.
+@param {Object} [animationOptions] The animation options to use.
+
+	Utils.align [layerA, layerB], 'x'
+
+	Utils.align [layerA, layerB], 'x', 32, 200
+
+	Utils.align [layerA, layerB], 'x', 32, 200, true, {time: .5}
+
+Also works with 'horizontal' and 'vertical', (alias to 'midX' and 'midY').
+
+	Utils.align [layerA, layerB], 'horizontal'
+
+###
+Utils.distribute = (layers = [], property, start, end, animate = false, animationOptions = {}) ->
 	
-	animate ?= typeof start is 'boolean' and start is true
-	start ?= _.minBy(array, property)?[property]
-	end ?= _.maxBy(array, property)?[property]
-	step = (end - start) / (layers.length - 1)
+	property = 'midX' if property is 'horizontal'
+	property = 'midY' if property is 'vertical'
+
+	layers = _.sortBy(layers, [property])
+
+	if _.isUndefined(start) or typeof start is 'boolean'
+		animate = start ? false
+		animationOptions = end ? {}
+		start = layers[0][property]
+		end = _.last(layers)[property]
+
+	distance = (end - start) / (layers.length - 1)
+
+	values = layers.map (layer, i) ->
+		return {"#{property}": start + (distance * i)}
 	
-	if property is 'horizontal'
-		totalWidth = end - start
-		contentWidth = _.sumBy(layers, 'width')
-		space = totalWidth - contentWidth
-		step = space / (layers.length - 1)
-		property = 'x'
-
-		for layer, i in layers			
-			if animate
-				layer.animate {"#{property}": last ? start}
-				last = layer.maxX + step
-				continue
-
-			layer[property] = last ? start
-			last = layer.maxX + step
-
-		return
-
-	if property is 'vertical'
-		totalWidth = end - start
-		contentWidth = _.sumBy(layers, 'height')
-		space = totalWidth - contentWidth
-		step = space / (layers.length - 1)
-		property = 'y'
-
-		for layer, i in layers			
-			if animate
-				layer.animate {"#{property}": last ? start}
-				last = layer.maxY + step
-				continue
-
-			layer[property] = last ? start
-			last = layer.maxY + step
-
-		return
-
-	for layer, i in layers			
-		if animate 
-			layer.animate {"#{property}": start + (i * step)}
+	for layer, i in layers
+		if animate
+			layer.animate values[i], animationOptions
 			continue
-			
-		layer[property] = start + (i * step)
+		
+		_.assign layer, values[i]
+
+###
+Offset an array of layers vertically.
+
+@param {Array} layers The array of layers to offset.
+@param {Number} distance The distance between each layer.
+@param {Boolean} [animate] Whether to animate layers to the new position.
+@param {Object} [animationOptions] The animation options to use.
+
+	Utils.align [layerA, layerB],
+		x: 200
+
+	Utils.align [layerA, layerB],
+		x: 200
+		true
+		time: .5
+###
+Utils.offsetY = (layers = [], distance = 0, animate = false, animationOptions = {}) -> 
+	
+	startY = layers[0].y
+	yValues = []
+	yValues = layers.map (layer, i) ->
+		v = {y: startY}
+		startY += layer.height + distance
+		return v
+		
+	for layer, i in layers
+		if animate
+			layer.animate yValues[i], animationOptions
+		else
+			_.assign layer, yValues[i]
+
+###
+Offset an array of layers horizontally.
+
+@param {Array} array The array of layers to offset.
+@param {Number} distance The distance between each layer.
+@param {Boolean} [animate] Whether to animate layers to the new position.
+@param {Object} [animationOptions] The animation options to use.
+
+	Utils.align [layerA, layerB],
+		x: 200
+
+	Utils.align [layerA, layerB],
+		x: 200
+		true
+		time: .5
+###
+Utils.offsetX= (layers = [], distance = 0, animate = false, animationOptions = {}) -> 
+	
+	startX = layers[0].x
+	xValues = []
+	xValues = layers.map (layer, i) ->
+		v = {x: startX}
+		startX += layer.width + distance
+		return v
+		
+	for layer, i in layers
+		if animate
+			layer.animate xValues[i], animationOptions
+		else
+			_.assign layer, xValues[i]
 
 
 # arrange layers in an array into a grid, using a set number of columns and row/column margins
