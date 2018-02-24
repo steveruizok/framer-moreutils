@@ -53,7 +53,7 @@ Utils.pin = (layer, target, directions...) ->
 				layer.pins ?= []
 				layer.pins.push(setPin)
 				
-				targetLayer.on(setPin.event, setPin.func)
+				target.on(setPin.event, setPin.func)
 	
 
 ###
