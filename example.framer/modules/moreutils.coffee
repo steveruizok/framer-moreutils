@@ -45,7 +45,7 @@ Utils.pin = (layer, target, directions...) ->
 			
 			for prop in props
 				setPin =
-					targetLayer: targetLayer
+					targetLayer: target
 					direction: direction
 					event: "change:#{prop}"
 					func: -> layer[lProp] = getDifference()
