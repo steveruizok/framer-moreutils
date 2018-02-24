@@ -270,13 +270,19 @@ Set all layers in an array to the same property or properties.
 		time: .5
 ###
 Utils.align = (layers = [], direction, animate, animationOptions = {}) -> 
+	minX = _.minBy(layers, 'x').x
+	maxX = _.maxBy(layers, 'maxX').maxX
+	minY = _.minBy(layers, 'y').y
+	maxY = _.maxBy(layers, 'maxY').maxY
+
+
 	options = switch direction
-		when "top" then {y: _.minBy(layers, 'y').y}
-		when "middle" then {midY: _.sumBy(layers, 'midY')/layers.length}
-		when "bottom" then {maxY: _.maxBy(layers, 'maxY').maxY}
-		when "left" then {x: _.minBy(layers, 'x').x}
-		when "center" then {midX: _.sumBy(layers, 'midX')/layers.length}
-		when "right" then {maxX: _.maxBy(layers, 'maxX').maxX}
+		when "top" then {y: minY}
+		when "middle" then {midY: (maxY - minY)/2 + minY}
+		when "bottom" then {maxY: maxY}
+		when "left" then {x: minY}
+		when "center" then {midX: (maxX - minX)/2 + minX}
+		when "right" then {maxX: maxX}
 		else {}
 
 	for layer, i in layers
@@ -378,7 +384,7 @@ Offset an array of layers horizontally.
 		true
 		time: .5
 ###
-Utils.offsetX= (layers = [], distance = 0, animate = false, animationOptions = {}) -> 
+Utils.offsetX = (layers = [], distance = 0, animate = false, animationOptions = {}) -> 
 	
 	startX = layers[0].x
 	values = []
@@ -529,12 +535,24 @@ Utils.hug = (layer, padding = {}) ->
 	right = _.maxBy(layer.children, 'maxX').maxX
 
 	_.assign layer,
-		width: (bottom - top) + (padding.top ? 0) + (padding.bottom ? 0)
-		height: (right - left) + (padding.left ? 0) + (padding.right ? 0)
+		height: (bottom - top) + (padding.top ? 0) + (padding.bottom ? 0)
+		width: (right - left) + (padding.left ? 0) + (padding.right ? 0)
 
 	for child in layer.children
 		child.y = top + (child.y - top) + (padding.top ? 0)
 		child.x = left + (child.x - left) + (padding.left ? 0)
+
+###
+Change a layer's size to contain its layer's children.
+
+@param {Layer} layer The parent layer to change size.
+
+	Utils.contain(layerA)
+###
+Utils.contain = (layer) ->
+	layer.props = 
+		width: _.maxBy(layer.children, 'maxX')?.maxX
+		height: _.maxBy(layer.children, 'maxY')?.maxY
 
 
 # get a status color based on a standard deviation
@@ -846,7 +864,6 @@ Utils.toMarkdown = (textLayer) ->
 		
 	textLayer.emit "change:text", textLayer.text, textLayer
 
-
 # Make an asyncronous request
 #
 # @example Fetch and return a Response object.
@@ -899,6 +916,9 @@ Utils.randomText = (words = 12, sentences = false, paragraphs = false) ->
 	unless sentences 
 		return text.join(' ')
 
+	if words <= 3
+		return _.capitalize( _.sampleSize(text, 3).join(' ') ) + '.'
+
 	# make sentences
 
 	sentences = []
@@ -911,6 +931,8 @@ Utils.randomText = (words = 12, sentences = false, paragraphs = false) ->
 		length = _.clamp(_.random(3, 6), 0, text.length)
 		sentences.push(_.pullAt(text, [0...length]))
 
+	if sentences.length < 3
+		paragraphs = false
 	
 	unless paragraphs
 		return sentences.map( (a) ->
@@ -922,7 +944,7 @@ Utils.randomText = (words = 12, sentences = false, paragraphs = false) ->
 	paragraphs = []
 
 	while sentences.length > 0
-		if sentences.length <= 3
+		if sentences.length <= 3 and paragraphs.length > 0
 			_.sample(paragraphs).push(sentences.pop())
 			continue 
 
@@ -940,7 +962,7 @@ Utils.randomText = (words = 12, sentences = false, paragraphs = false) ->
 				string += _.capitalize( sentence.join(' ') ) + '. '
 			'').trim() + '\n\n'
 
-	return text
+	return text.trim()
 
 # Check whether a string is a valid email.
 #
