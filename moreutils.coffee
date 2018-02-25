@@ -399,6 +399,96 @@ Utils.offsetX = (layers = [], distance = 0, animate = false, animationOptions = 
 		else
 			_.assign layer, values[i]
 
+# Create a timer instance to simplify intervals.
+# Thanks to https://github.com/marckrenn.
+#
+# @example
+#
+# timer = new Utils.timer(1, -> print 'hello world!')
+# Utils.delay 5, -> timer.pause()
+# Utils.delay 8, -> timer.resume()
+# Utils.delay 10, -> timer.restart()
+#
+Utils.Timer = class Timer
+	constructor: (time, f) ->
+		@paused = false
+		@saveTime = null
+		@saveFunction = null
+
+		if time? and f?
+			@start(time, f)
+	
+	start: (time, f) =>
+		@saveTime = time
+		@saveFunction = f
+
+		f()
+		proxy = => f() unless @paused
+		unless @paused
+			@_id = timer = Utils.interval(time, proxy)
+		else return
+	
+	pause:   => @paused = true
+	resume:  => @paused = false
+	reset:   => clearInterval(@_id)
+	restart: => 
+		clearInterval(@_id)
+		Utils.delay 0, => @start(@saveTime, @saveFunction)
+
+
+###
+A class to manage states of multiple TextLayers, which "observe" the state. 
+When the state changes, the StateManager will update all "observer" TextLayers,
+applying the new state to each TextLayer's template property.
+
+@param {Array} [layers] The layers to observe the state.
+@param {Object} [state] The initial state.
+
+	stateMgr = new Utils.StateManager, myLayers
+		firstName: "David"
+		lastName: "Attenborough"
+
+	stateMgr.setState
+		firstName: "Sir David"
+
+###
+Utils.StateManager = class StateManager
+	constructor: (layers = [], state = {}) ->
+		
+		@_state = state
+		@_observers = layers
+		
+		Object.defineProperty @,
+			"observers",
+			get: -> return @_observers
+		
+		Object.defineProperty @,
+			"state",
+			get: -> return @_state
+			set: (obj) ->
+				if typeof obj isnt "object"
+					throw "State must be an object."
+				
+				@setState(obj)
+
+		@_updateState()
+
+	_updateState: =>
+		@observers.forEach (layer) =>
+			layer.template = @state
+	
+	addObserver: (layer) ->
+		@_observers.push(layer)
+		layer.template = @state
+		
+	removeObserver: (layer) ->
+		_.pull(@_observers, layer)
+	
+	setState: (options = {}) -> 
+		_.merge(@_state, options)
+		@_updateState()
+		
+		return @_state
 
 # arrange layers in an array into a grid, using a set number of columns and row/column margins
 # @example    Utils.grid(layers, 4)
@@ -724,41 +814,9 @@ Utils.linkProperties = (layerA, layerB, props...) =>
 		do (prop) =>
 			layerA.on "change:#{prop}", => layerB[prop] = layerA[prop]
 
-# Create a timer instance to simplify intervals.
-# Thanks to https://github.com/marckrenn.
-#
-# @example
-#
-# timer = new Utils.timer(1, -> print 'hello world!')
-# Utils.delay 5, -> timer.pause()
-# Utils.delay 8, -> timer.resume()
-# Utils.delay 10, -> timer.restart()
-#
-Utils.timer = class Timer
-	constructor: (time, f) ->
-		@paused = false
-		@saveTime = null
-		@saveFunction = null
 
-		if time? and f?
-			@start(time, f)
-	
-	start: (time, f) =>
-		@saveTime = time
-		@saveFunction = f
 
-		f()
-		proxy = => f() unless @paused
-		unless @paused
-			@_id = timer = Utils.interval(time, proxy)
-		else return
-	
-	pause:   => @paused = true
-	resume:  => @paused = false
-	reset:   => clearInterval(@_id)
-	restart: => 
-		clearInterval(@_id)
-		Utils.delay 0, => @start(@saveTime, @saveFunction)
+
 
 # Copy text to the clipboard.
 #
