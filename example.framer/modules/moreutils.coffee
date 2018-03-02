@@ -247,6 +247,7 @@ Utils.define = (layer, property, value, callback, validation, error) ->
 
 			layer["_#{property}"] = value
 			layer.emit("change:#{property}", value, layer)
+		configurable: true
 			
 	if callback? and typeof callback is 'function'
 		layer.on("change:#{property}", callback)
@@ -809,10 +810,11 @@ Utils.px = (num) ->
 #
 # Utils.linkProperties(layerA, layerB, 'x')
 #
-Utils.linkProperties = (layerA, layerB, props...) =>
-	for prop in props
-		do (prop) =>
-			layerA.on "change:#{prop}", => layerB[prop] = layerA[prop]
+Utils.linkProperties = (layerA, layerB, props...) ->
+	props.forEach (prop) ->
+		update = -> layerB[prop] = layerA[prop]
+		layerA.on "change:#{prop}", update
+		update()
 
 
 
