@@ -247,6 +247,7 @@ Utils.define = (layer, property, value, callback, validation, error) ->
 
 			layer["_#{property}"] = value
 			layer.emit("change:#{property}", value, layer)
+		configurable: true
 			
 	if callback? and typeof callback is 'function'
 		layer.on("change:#{property}", callback)
@@ -258,6 +259,7 @@ Set all layers in an array to the same property or properties.
 
 @param {Array} layers The array of layers to align.
 @param {Object} options The properties to set.
+@param {Boolean} [minimum] Whether to use average values or minimum values for middle / center.
 @param {Boolean} [animate] Whether to animate to the new property.
 @param {Object} [animationOptions] The animation options to use.
 
@@ -269,7 +271,7 @@ Set all layers in an array to the same property or properties.
 		true
 		time: .5
 ###
-Utils.align = (layers = [], direction, animate, animationOptions = {}) -> 
+Utils.align = (layers = [], direction, minimum = true, animate, animationOptions = {}) -> 
 	minX = _.minBy(layers, 'x').x
 	maxX = _.maxBy(layers, 'maxX').maxX
 	minY = _.minBy(layers, 'y').y
@@ -278,10 +280,18 @@ Utils.align = (layers = [], direction, animate, animationOptions = {}) ->
 
 	options = switch direction
 		when "top" then {y: minY}
-		when "middle" then {midY: (maxY - minY)/2 + minY}
+		when "middle"
+			if minimum
+				{midY: _.minBy(layers, 'y').midY}
+			else 
+				{midY: (maxY - minY)/2 + minY}
 		when "bottom" then {maxY: maxY}
 		when "left" then {x: minY}
-		when "center" then {midX: (maxX - minX)/2 + minX}
+		when "center"
+			if minimum 
+				{midX: _.minBy(layers, 'x').midX}
+			else
+				{midX: (maxX - minX)/2 + minX}
 		when "right" then {maxX: maxX}
 		else {}
 
@@ -338,6 +348,27 @@ Utils.distribute = (layers = [], property, start, end, animate = false, animatio
 		_.assign layer, values[i]
 
 ###
+Stack layers.
+
+@param {Array} layers The array of layers to offset.
+@param {Number} distance The distance between each layer.
+@param {String} axis Whether to stack on the x or y axis.
+@param {Boolean} [animate] Whether to animate layers to the new position.
+@param {Object} [animationOptions] The animation options to use.
+
+###
+Utils.stack = (layers = [], distance = 0, axis = "vertical", animate = false, animationOptions = {}) ->
+	return if layers.length <= 1
+
+	if axis is "vertical" or axis is "y"
+		Utils.offsetY(layers, distance, animate, animationOptions)
+	else if axis is "horizontal" or axis is "x"
+		Utils.offsetX(layers, distance, animate, animationOptions)
+
+	return layers
+
+
+###
 Offset an array of layers vertically.
 
 @param {Array} layers The array of layers to offset.
@@ -354,7 +385,8 @@ Offset an array of layers vertically.
 		time: .5
 ###
 Utils.offsetY = (layers = [], distance = 0, animate = false, animationOptions = {}) -> 
-	
+	return if layers.length <= 1
+
 	startY = layers[0].y
 	values = []
 	values = layers.map (layer, i) ->
@@ -367,6 +399,8 @@ Utils.offsetY = (layers = [], distance = 0, animate = false, animationOptions = 
 			layer.animate values[i], animationOptions
 		else
 			_.assign layer, values[i]
+
+	return layers
 
 ###
 Offset an array of layers horizontally.
@@ -385,7 +419,8 @@ Offset an array of layers horizontally.
 		time: .5
 ###
 Utils.offsetX = (layers = [], distance = 0, animate = false, animationOptions = {}) -> 
-	
+	return if layers.length <= 1
+
 	startX = layers[0].x
 	values = []
 	values = layers.map (layer, i) ->
@@ -398,6 +433,8 @@ Utils.offsetX = (layers = [], distance = 0, animate = false, animationOptions = 
 			layer.animate values[i], animationOptions
 		else
 			_.assign layer, values[i]
+
+	return layers
 
 # Create a timer instance to simplify intervals.
 # Thanks to https://github.com/marckrenn.
@@ -492,7 +529,7 @@ Utils.StateManager = class StateManager
 
 # arrange layers in an array into a grid, using a set number of columns and row/column margins
 # @example    Utils.grid(layers, 4)
-grid: (array = [], cols = 4, rowMargin = 16, colMargin) ->
+Utils.grid = (array = [], cols = 4, rowMargin = 16, colMargin) ->
 	
 	g =
 		x: array[0].x
@@ -609,41 +646,69 @@ Change a layer's size to fit around the layer's children.
 
 	Utils.hug(layerA, {top: 16, bottom: 24})
 ###
-Utils.hug = (layer, padding = {}) ->
+Utils.hug = (layer, padding) ->
 
-	if typeof padding is "number"
-		padding = 
-			top: padding
-			right: padding
-			bottom: padding
-			left: padding
+	def = 0
+	defStack = undefined
 
-	top = _.minBy(layer.children, 'y').y 
-	bottom = _.maxBy(layer.children, 'maxY').maxY
+	if typeof padding is "number" 
+		def = padding
+		defStack = padding
+		padding = {}
 
-	left = _.minBy(layer.children, 'x').x 
-	right = _.maxBy(layer.children, 'maxX').maxX
+	_.defaults padding,
+		top: def
+		bottom: def
+		left: def
+		right: def
+		stack: defStack
 
-	_.assign layer,
-		height: (bottom - top) + (padding.top ? 0) + (padding.bottom ? 0)
-		width: (right - left) + (padding.left ? 0) + (padding.right ? 0)
+	Utils.bind layer, ->
+		for child, i in @children
 
-	for child in layer.children
-		child.y = top + (child.y - top) + (padding.top ? 0)
-		child.x = left + (child.x - left) + (padding.left ? 0)
+			child.y += @padding.top
+
+			child.x += @padding.left
+
+			if @padding.right? > 0
+				@width = _.maxBy(@children, 'maxY')?.maxY + @padding.right
+
+		if @padding.stack? >= 0
+			Utils.offsetY(@children, @padding.stack)
+			Utils.delay 0, =>
+				Utils.contain(@, false, @padding.right, @padding.bottom)
+			return
+
+		Utils.contain(@, false, @padding.right, @padding.bottom)
+
 
 ###
-Change a layer's size to contain its layer's children.
+Increase or decrease a layer's size to contain its layer's children.
 
 @param {Layer} layer The parent layer to change size.
+@param {Boolean} fit Whether to limit size change to increase only.
+@param {Number} paddingX Extra space to add to the right side of the new size.
+@param {Number} paddingY Extra space to add to the bottom of the new size.
 
 	Utils.contain(layerA)
 ###
-Utils.contain = (layer) ->
-	layer.props = 
-		width: _.maxBy(layer.children, 'maxX')?.maxX
-		height: _.maxBy(layer.children, 'maxY')?.maxY
+Utils.contain = (layer, fit = false, paddingX = 0, paddingY = 0) ->
+	return if layer.children.length is 0
 
+	maxChildX = _.maxBy(layer.children, 'maxX')?.maxX + paddingX
+	maxChildY = _.maxBy(layer.children, 'maxY')?.maxY + paddingY
+
+	if fit
+		layer.props = 
+			width: Math.max(layer.width, maxChildX)
+			height: Math.max(layer.height, maxChildY)
+		return 
+
+	layer.props = 
+		width: maxChildX
+		height: maxChildY
+
+	return layer
 
 # get a status color based on a standard deviation
 # @example    Utils.getStatusColor(.04, false)
@@ -809,10 +874,11 @@ Utils.px = (num) ->
 #
 # Utils.linkProperties(layerA, layerB, 'x')
 #
-Utils.linkProperties = (layerA, layerB, props...) =>
-	for prop in props
-		do (prop) =>
-			layerA.on "change:#{prop}", => layerB[prop] = layerA[prop]
+Utils.linkProperties = (layerA, layerB, props...) ->
+	props.forEach (prop) ->
+		update = -> layerB[prop] = layerA[prop]
+		layerA.on "change:#{prop}", update
+		update()
 
 
 
@@ -882,7 +948,7 @@ Utils.toMarkdown = (textLayer) ->
 
 	regexes = [
 		[/\[([^\[]+)\]\(([^\)]+)\)/, '<a href=\'$2\'>$1</a>']
-		[/(\*\*|__)(.*?)\1/, '<strong>$2</strong>']
+		[/(\*\*|__)(.*?)\1/, '<b>$2</b>']
 		[/(\*|_)(.*?)\1/, '<i>$2</i>']
 		[/\~\~(.*?)\~\~/, '<del>$1</del>']
 		[/`(.*?)`/, '<code>$1</code>']
