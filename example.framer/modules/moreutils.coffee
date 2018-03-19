@@ -814,13 +814,8 @@ Utils.getLayerAtPoint = (point, array = Framer.CurrentContext._layers) ->
 #
 Utils.getLayersAtPoint = (point, array = Framer.CurrentContext._layers) ->
 	
-	layers = []
+	return array.filter (layer) -> Utils.pointInPolygon(point, Utils.pointsFromFrame(layer))
 	
-	for layer, i in array
-		if Utils.pointInPolygon(point, Utils.pointsFromFrame(layer))
-			layers.push(layer)
-			
-	return layers
 
 # Try to find the layer that owns a given HTML element. By default, it will check 
 # all layers in the current Framer context; but you can specify your own array of
