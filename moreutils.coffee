@@ -1087,7 +1087,26 @@ Utils.randomText = (words = 12, sentences = false, paragraphs = false) ->
 #
 # @param {String} string The string to check.
 Utils.isEmail = (string) ->
-    return string.toLowerCase().match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+    matches = string.toLowerCase().match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+    return _.isArray(matches)
+
+# Get a relative date, x number of units before or after a start date.
+#
+# @param [Number] units The number of units from now.
+# @param [String] [unit] The type of unit to use; default is 'days'.
+# @param [String] [start] The time to start, in timestamp milliseconds. Defaults to _.now().
+
+Utils.getRelativeDate = (units = 0, unit = 'days', start) ->
+
+	start ?= _.now()
+
+	t = switch unit
+		when "minutes" then 1000*60
+		when "hours" then 1000*60*60
+		when "days" then 1000*60*60*24
+		when "years" then 1000*60*60*24*356
+
+	return new Date(start + (t * units))
 
 
 # Source words for Utils.randomText()
