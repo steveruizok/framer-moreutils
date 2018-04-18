@@ -1014,6 +1014,44 @@ Utils.fetchJSON = (url, callback) ->
 		(r) -> r.json().then( callback )
 		)
 
+# Get a random number, either as an integer or float.
+#
+# @example Get a random integer between 2 and 4.
+#	Utils.randomNumber(2, 4)  
+#	» 3
+#
+# @example Get a random float (at 3 decimal places) between 0 and 4.
+#	Utils.randomNumber(0, 4, 3) 
+#	» 3.129
+#
+# If you call Utils.randomNumber no value, the method will return a float
+# between 0 and 1.
+#
+# @example Get a random float (at 2 decimal places) between 0 and 1.
+#	Utils.randomNumber()
+#	» 0.31
+#
+# If you call Utils.randomNumber with only one value, the method will return
+# an integer between zero and this value.
+#
+# @example Get a random integer between 0 and 4.
+#	Utils.randomNumber(4)  
+#	» 1
+#
+# @param [number] lowest	The lowest possible number to return
+# @param [number] upper		The highest possible number to return
+# @param [number] places	The number of decimal places in the number.
+#
+#
+Utils.randomNumber = (lower, upper, places = 0) ->
+	[lower, upper, places] = [0, 1, 2] unless lower
+	[lower, upper] = [0, lower] unless upper
+
+	num = lower + Math.random() * (upper - lower)
+	
+	return Math.round(num) if places is 0
+	return parseFloat(num.toFixed(places))
+
 
 # Return a random text string.
 #
@@ -1024,6 +1062,10 @@ Utils.fetchJSON = (url, callback) ->
 # @example Generate sentences.
 #	Utils.randomText(4, true)
 #	» "Soluta dolor tempore pariatur."
+#
+# @example Split text into paragraphs (if long enough).
+#	Utils.randomText(4, true, true)
+#	» "Soluta dolor tempore pariatur." ...
 #
 # @ param [Integer] words The number of words to return
 # @ param [Boolean] [sentences] Whether to split the words into sentences
