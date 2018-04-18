@@ -1139,6 +1139,8 @@ Utils.isEmail = (string) ->
 # @param [String] [start] The time to start, in timestamp milliseconds. Defaults to _.now().
 
 Utils.getRelativeDate = (units = 0, unit = 'days', start) ->
+	if start instanceof Date
+		start = start.getTime()
 
 	start ?= _.now()
 
@@ -1150,6 +1152,46 @@ Utils.getRelativeDate = (units = 0, unit = 'days', start) ->
 
 	return new Date(start + (t * units))
 
+
+# Get ms for a stretch of time
+#
+# @param [Number] num The number of units to return
+# @param [String] unit The type of unit to convert to milliseconds
+
+Utils.getTime = (num, unit = "minutes") ->
+	switch unit
+		when "milliseconds"
+			return num
+		when "seconds"
+			return num * 1000
+		when "minutes"
+			return num * 1000 * 60
+		when "hours"
+			return num * 1000 * 60 * 60
+		when "days"
+			return num * 1000 * 60 * 60 * 24
+		when "weeks"
+			return num * 1000 * 60 * 60 * 24 * 7
+		when "years"
+			return num * 1000 * 60 * 60 * 24 * 365
+
+# Get the day of the week (e.g. Thursday) for any date
+#
+# @param [Date] date The date to get the day for
+
+Utils.getDay = (date) ->
+	day = date.getDay()
+
+	dayString = switch day
+		when 0 then "Sunday"
+		when 1 then "Monday"
+		when 2 then "Tuesday"
+		when 3 then "Wednesday"
+		when 4 then "Thursday"
+		when 5 then "Friday"
+		when 6 then "Saturday"
+
+	return dayString 
 
 # Source words for Utils.randomText()
 #
