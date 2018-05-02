@@ -527,6 +527,15 @@ Utils.StateManager = class StateManager
 		
 		return @_state
 
+
+Utils.setOrAnimateProps = (layer, bool, props) =>
+	if bool
+		layer.props = props
+		return
+
+	layer.animate props
+
+
 # arrange layers in an array into a grid, using a set number of columns and row/column margins
 # @example    Utils.grid(layers, 4)
 Utils.grid = (array = [], cols = 4, rowMargin = 16, colMargin) ->
@@ -744,6 +753,21 @@ Utils.chainAnimations = (animations...) ->
 		
 	Utils.delay 0, -> animations[0].restart()
 
+
+# Remove an event from a layer.
+#
+# @example
+#	layer.onAnimationEnd -> print 'hello world!'	
+#
+#	Utils.removeListener(layer, Events.AnimationEnd)
+#
+# @param [layer] layer		The layer to remove the event from.
+# @param [string] event		The event to remove.
+
+Utils.removeListener = (layer, event) ->
+	return unless event
+	layer.off(event, layer._events[event].fn)
+	
 
 # Check whether a point exists within a polygon, defined by an array of points
 # Note: this replaces Framer's existing (but broken) Utils.pointInPolygon method.
@@ -1139,6 +1163,7 @@ Utils.isEmail = (string) ->
 # @param [String] [start] The time to start, in timestamp milliseconds. Defaults to _.now().
 
 Utils.getRelativeDate = (units = 0, unit = 'days', start) ->
+	if start instanceof Date
 		start = start.getTime()
 
 	start ?= _.now()
@@ -1161,6 +1186,26 @@ Utils.getTime = (num, unit = "minutes") ->
 	switch unit
 		when "milliseconds"
 			return num
+		when "seconds"
+			return num * 1000
+		when "minutes"
+			return num * 1000 * 60
+		when "hours"
+			return num * 1000 * 60 * 60
+		when "days"
+			return num * 1000 * 60 * 60 * 24
+		when "weeks"
+			return num * 1000 * 60 * 60 * 24 * 7
+		when "years"
+			return num * 1000 * 60 * 60 * 24 * 365
+
+# Get the day of the week (e.g. Thursday) for any date
+#
+# @param [Date] date The date to get the day for
+
+Utils.getDay = (date) ->
+	day = date.getDay()
+
 	dayString = switch day
 		when 0 then "Sunday"
 		when 1 then "Monday"
