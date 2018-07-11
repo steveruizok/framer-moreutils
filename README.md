@@ -135,7 +135,9 @@ Utils.constrain(layerA, 'height', 'left', 'aspectRatio')
 
 #### Utils.fit(layer, layers, property, [padding])
 
-#### Utils.contain(layer, [padding])
+#### Utils.contain(layer, fit, paddingRight, paddingBottom)
+
+_Note: `Utils.contain` must be called after the children layer(s) size changes, any changes to children(s) sizes after calling `contain` won't be reflected._
 
 #### Utils.chainAnimations(animations, [looping])
 
